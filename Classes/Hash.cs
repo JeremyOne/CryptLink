@@ -11,17 +11,11 @@ namespace CryptLink
 {
     public class Hash : IComparable
     {
-        public HashProviders Provider { get; set; }
+        public HashProvider Provider { get; set; }
         public byte[] Hashed { get; set; }
         public bool Valid { get; set; }
 
-        public Hash(Message From) {
-            UnicodeEncoding UE = new UnicodeEncoding();
-            ComputeHash(UE.GetBytes(From.GetJson()), From.HashProvider);
-            Valid = true;
-        }
-
-        public Hash(string From, HashProviders HashProvider) {
+        public Hash(string From, HashProvider HashProvider) {
             UnicodeEncoding UE = new UnicodeEncoding();
             ComputeHash(UE.GetBytes((string)From), HashProvider);
 
@@ -34,24 +28,21 @@ namespace CryptLink
 
         public Hash() { }
 
-        public Hash(byte[] From, HashProviders HashProvider) {
+        public Hash(byte[] From, HashProvider HashProvider) {
             ComputeHash(From, HashProvider);
-        }
-
-        public Hash(PeerDetails From, HashProviders HashProvider) {
-
-            ComputeHash(From.Cert.GetCertHash(), HashProvider);
         }
 
         /// <summary>
         /// Create a hash object from a b64 encoded byte array
         /// </summary>
-        /// <param name="FromBase64Encode">B64 encoded bytes, using Crypto.DecodeBytes() b64 format</param>
+        /// <param name="FromBase64">B64 encoded bytes</param>
         /// <param name="HashProvider">The provider that calculated the hash</param>
-        public static Hash FromB64(string FromBase64Encode, HashProviders HashProvider) {
+        public static Hash FromB64(string FromBase64, HashProvider HashProvider) {
             var h = new Hash();
-            h.Hashed = Crypto.DecodeBytes(FromBase64Encode);
+
+            h.Hashed = System.Convert.FromBase64CharArray(FromBase64.ToArray<char>(), 0, FromBase64.Length);
             h.Provider = HashProvider;
+
             return h;
         }
 
@@ -61,13 +52,13 @@ namespace CryptLink
         /// </summary>
         /// <param name="FromX509">X509 cert with public key</param>
         /// <param name="HashProvider">The provider that calculated the hash</param>
-        public static Hash FromX509(X509Certificate2 FromX509, HashProviders HashProvider) {
+        public static Hash FromX509(X509Certificate2 FromX509, HashProvider HashProvider) {
             var h = new Hash();
             h.ComputeHash(FromX509.GetPublicKey(), HashProvider);
             return h;
         }
 
-        public static Hash FromHttpClientCert(System.Web.HttpClientCertificate FromCert, HashProviders HashProvider) {
+        public static Hash FromHttpClientCert(System.Web.HttpClientCertificate FromCert, HashProvider HashProvider) {
             var h = new Hash();
             h.ComputeHash(FromCert.PublicKey, HashProvider);
             return h;
@@ -78,14 +69,14 @@ namespace CryptLink
         /// </summary>
         /// <param name="HashBytes">The value of the hash</param>
         /// <param name="HashProvider">The provider that calculated the hash, if null assume SHA256</param>
-        public static Hash FromBinaryHash(byte[] HashBytes, HashProviders? HashProvider) {
+        public static Hash FromBinaryHash(byte[] HashBytes, HashProvider? HashProvider) {
             var h = new Hash();
             h.Hashed = HashBytes;
 
             if (HashProvider.HasValue) {
                 h.Provider = HashProvider.Value;
             } else {
-                h.Provider = HashProviders.SHA256;
+                h.Provider = Hash.HashProvider.SHA256;
             }
             
             return h;
@@ -97,32 +88,28 @@ namespace CryptLink
         /// </summary>
         /// <param name="From">Bytes to compute the hash from</param>
         /// <param name="HashProvider">The crypto provider to compute the hash with</param>
-        private void ComputeHash(byte[] From, HashProviders HashProvider){
+        private void ComputeHash(byte[] From, HashProvider HashProvider){
             int truncateBytes = 0;
             Provider = HashProvider;
 
             //set the provider for truncated types
-            if (HashProvider == HashProviders.SHA128) {
-                HashProvider = HashProviders.SHA256;
-                truncateBytes = 128;
-            } else if (HashProvider == HashProviders.SHA64) {
-                HashProvider = HashProviders.SHA256;
-                truncateBytes = 64;
+            if (HashProvider == HashProvider.SHA128) {
+                HashProvider = HashProvider.SHA256;
+                truncateBytes = 16;
+            } else if (HashProvider == HashProvider.SHA64) {
+                HashProvider = HashProvider.SHA256;
+                truncateBytes = 8;
             }
 
             byte[] hashValue;
 
-            //actual computation
-            if (HashProvider == HashProviders.Murmer32) {
-                uint h = MurmurHash2.Hash(From);
-                hashValue = BitConverter.GetBytes(h);
-            } else {
-                HashAlgorithm hash = HashAlgorithm.Create(HashProvider.ToString());
-                hashValue = hash.ComputeHash(From);
-            }
+            //hash
+            HashAlgorithm hash = HashAlgorithm.Create(HashProvider.ToString());
+            hashValue = hash.ComputeHash(From);
             
             //truncate if needed
             if(truncateBytes > 0) {
+                Hashed = new byte[truncateBytes];
                 Array.Copy(hashValue, Hashed, truncateBytes);
             } else {
                 Hashed = hashValue;
@@ -262,17 +249,15 @@ namespace CryptLink
         }
 
         /// <summary>
-        /// Depreciated and used for compatibility only, do not use!
-        /// Needed for OverrideGetHashCodeOnOverridingEquals
+        /// Depreciated and implemented for compatibility only, this hash is expressed as a Int32 (only 4 bytes).
+        /// (Needed for OverrideGetHashCodeOnOverridingEquals)
         /// </summary>
         public override int GetHashCode() {
             return BitConverter.ToInt32(Hashed, 0);
         }
 
 
-        //Below here are the operators, so we can do something like:
-        //(Hash1 > Hash2) and get a bool result
-
+        //Operators for doing boolean comparisons: (Hash1 > Hash2) returns a bool
         public static bool operator ==(Hash Left, object Right) {
             return Compare(Left, Right) == 0;
         }
@@ -321,8 +306,7 @@ namespace CryptLink
             return Compare(Left, Right) <= 0;
         }
 
-        public enum HashProviders {
-            Murmer32,
+        public enum HashProvider {
             SHA64,
             SHA128,
             SHA256,

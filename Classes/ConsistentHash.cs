@@ -25,11 +25,11 @@ namespace CryptLink
         SortedDictionary<Hash, T> circle = new SortedDictionary<Hash, T>();
         SortedDictionary<Hash, T> unreplicatedNodes = new SortedDictionary<Hash, T>();
         Dictionary<Hash, int> replicationWeights = new Dictionary<Hash, int>();
-        HashProviders Provider = HashProviders.SHA256;
+        Hash.HashProvider Provider = Hash.HashProvider.SHA256;
 
         Hash[] ayKeys = null;    //cache the ordered keys for better performance
 
-        public ConsistentHash(HashProviders _Provider){
+        public ConsistentHash(Hash.HashProvider _Provider){
             Provider = _Provider;
         }
 
@@ -59,7 +59,7 @@ namespace CryptLink
         /// </summary>
         /// <param name="fromObject">Object to hash</param>
         /// <param name="Provider">The hash provider to hash with</param>
-        public static Hash GetHash(object fromObject, HashProviders Provider) {
+        public static Hash GetHash(object fromObject, Hash.HashProvider Provider) {
             if(fromObject == null){
                 throw new ArgumentException("Object can't be null");
             } else if (IsHashable(fromObject)) {
@@ -118,7 +118,7 @@ namespace CryptLink
                 Hash newHash = nodeHash.Rehash(i);
                 if (!circle.Remove(newHash)) {
                     throw new Exception("Error removing replicated hashes, this should only happen if: " +
-                    "1. There was a hash collission, 2. The key array was modified outside of this logic");
+                    "1. There was a hash collision, 2. The key array was modified outside of this logic");
                 }
             }
 

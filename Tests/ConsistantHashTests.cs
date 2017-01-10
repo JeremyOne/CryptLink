@@ -11,7 +11,10 @@ namespace CryptLink.Tests {
 
         [Test]
         public void ConsistantHashTests1() {
-            // TODO
+            var shString = new ConsistentHash<string>(Hash.HashProvider.SHA128);
+
+
+
         }
     }
 }

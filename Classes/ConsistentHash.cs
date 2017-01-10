@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace CryptLink
 {
-    //Dev notes:
     //based on https://code.google.com/p/consistent-hash/  (Lesser GPL)
     //Added comments
     //Modified to use Hash object instead of Int to store hash data in, this allows for any length hash

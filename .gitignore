@@ -2,4 +2,8 @@ obj/*
 .vs/*
 bin/*
 packages/*
+*.csproj.user
+*.sln
 *.cache
+Ideas.txt
+*.userprefs

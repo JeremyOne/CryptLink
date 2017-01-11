@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using CryptLink;
+using System.Collections.Generic;
 
 namespace CryptLinkService {
 	[TestFixture()]
@@ -76,7 +77,6 @@ namespace CryptLinkService {
             }
         }
 
-
         [Test()]
         public void HashBinaryOperatorTests() {
             foreach (Hash.HashProvider provider in Enum.GetValues(typeof(Hash.HashProvider))) {
@@ -114,21 +114,28 @@ namespace CryptLinkService {
             }
         }
 
-        //[Test()]
-        //public void HashOperatorTests() {
-        //    foreach (Hash.HashProvider provider in Enum.GetValues(typeof(Hash.HashProvider))) {
-        //        var h1 = new Hash("TEST", provider);
-        //        var h2 = new Hash("TEST", provider);
-        //        var h3 = new Hash("test", provider);
-        //        var h4 = new Hash("", provider);
+        [Test()]
+        public void HashSortingTests() {
+            foreach (Hash.HashProvider provider in Enum.GetValues(typeof(Hash.HashProvider))) {
+                
+                var h1 = new Hash("1", provider);
+                var h2 = new Hash("2", provider);
+                var h3 = new Hash("3", provider);
 
-        //    }
-        //}
+                var hList = new List<Hash>();
+                hList.Add(h1);
+                hList.Add(h2);
+                hList.Add(h3);
 
-        //Todo: Test -
-        //All constructors, invalid objects
-        //All compare types
-        //Sorting
+                Assert.IsNotEmpty(hList);
+                Assert.AreEqual(hList.Count, 3);
+
+                hList.Sort();
+
+            }
+        }
+
     }
+
 }
 

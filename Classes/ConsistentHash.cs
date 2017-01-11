@@ -97,13 +97,22 @@ namespace CryptLink
                 var rHash = nodeHash.Rehash(i);
                 circle[rHash] = node;
             }
-            
-            replicationWeights.Add(nodeHash, ReplicationWeight);
-            unreplicatedNodes.Add(nodeHash, node);
+
+            if (unreplicatedNodes.ContainsKey(nodeHash) == false) {
+                replicationWeights.Add(nodeHash, ReplicationWeight);
+                unreplicatedNodes.Add(nodeHash, node);
+            }
 
             if (updateKeyArray) {
-                ayKeys = circle.Keys.ToArray();
+                UpdateKeyArray();
             }
+        }
+
+        /// <summary>
+        /// Updates the list of ordered keys for faster lookups
+        /// </summary>
+        public void UpdateKeyArray() {
+            ayKeys = circle.Keys.ToArray();
         }
 
         /// <summary>

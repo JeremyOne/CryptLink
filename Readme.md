@@ -18,6 +18,7 @@ A peer-to-peer messaging and data storage network that uses client and server si
   * Push-style notifications of new messages
   * Get network user info as provided
 * Allow browsers to participate in network using local storage
+* Auto-push updates to all members
 
 ## Technology
 CryptLink will use many existing technologies and ideas in new ways, including but not limited to:

@@ -29,7 +29,7 @@ namespace CryptLink {
         }
 
         /// <summary>
-        /// Decodes bytes from base64 (Replaces _-. with /+=)
+        /// Decodes bytes from base64 (Can decode _-. or /+= b64)
         /// </summary>
         public static byte[] DecodeBytes(string BytesB64Encoded) {
             if (string.IsNullOrWhiteSpace(BytesB64Encoded)) {

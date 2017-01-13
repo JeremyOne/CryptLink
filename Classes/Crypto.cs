@@ -5,7 +5,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CryptLink.Classes {
+namespace CryptLink {
+
+	/// <summary>
+	/// Helper functions for common crypto tasks
+	/// </summary>
     class Crypto {
         static RNGCryptoServiceProvider RNG = new RNGCryptoServiceProvider();
 

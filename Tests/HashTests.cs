@@ -3,7 +3,7 @@ using System;
 using CryptLink;
 using System.Collections.Generic;
 
-namespace CryptLinkService {
+namespace CryptLink {
 	[TestFixture()]
 	public class HashTests {
 

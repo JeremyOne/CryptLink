@@ -29,6 +29,7 @@ CryptLink will use many existing technologies and ideas in new ways, including b
 * GPG/PGP for end-to-end message/data encryption and signing
 * DHT (Distributed Hash Table) for resolving the host for message, data and user data
 * Block chain for user reputation
+* unit testing for all major features that are runnable on all platforms (nunit 2.6.4) in monodevelop or visual studio
 
 ## Licenses
 See [Licenses.md](Licenses.md)

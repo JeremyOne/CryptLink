@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace CryptLink {
 
 	/// <summary>
-	/// Helper functions for common crypto tasks
+	/// Helper functions for common RNG generation tasks
 	/// </summary>
-    class Crypto {
+    public class Crypto {
         static RNGCryptoServiceProvider RNG = new RNGCryptoServiceProvider();
 
         public static Guid GenerateCryptoGuid() {
@@ -19,8 +19,17 @@ namespace CryptLink {
             return g;
         }
 
+        /// <summary>
+        /// Generates a b64 style string of a specific length, useful for padding
+        /// </summary>
         public static string GetRandomString(int StringLength) {
-            return GetBytesB64(StringLength * 6);
+            var str = GetBytesB64(StringLength);
+
+            if (str.Length >= StringLength) {
+                return str.Substring(0, StringLength);
+            } else {
+                return str;
+            }
         }
 
         public static byte[] GetBytes(int Length) {

@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 
-namespace CryptLink {
+namespace CryptLink.Tests {
 	[TestFixture()]
 	public class Base64Tests {
 
@@ -18,8 +18,6 @@ namespace CryptLink {
 			Assert.AreEqual(encodedBytes, "CwvuBzzdXkA.");
 			decodedBytes = Base64.DecodeBytes(encodedBytes);
 			Assert.AreEqual(testBytes, decodedBytes);
-
-
 		}
 
 		[Test()]

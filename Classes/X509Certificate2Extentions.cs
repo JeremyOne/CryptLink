@@ -9,7 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CryptLink.Classes {
+namespace CryptLink {
     class X509Certificate2Extentions {
         
         public static X509Certificate2 ToX509Certificate2(

@@ -63,8 +63,10 @@
     <Compile Include="Classes\Hashable.cs" />
     <Compile Include="Classes\HashableString.cs" />
     <Compile Include="Classes\Message.cs" />
+    <Compile Include="Classes\MessageContainer.cs" />
     <Compile Include="Classes\Peer.cs" />
     <Compile Include="Classes\Server.cs" />
+    <Compile Include="Classes\X509Certificate2Builder.cs" />
     <Compile Include="Classes\X509Certificate2Extentions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -72,6 +74,8 @@
     <Compile Include="Tests\CryptoTests.cs" />
     <Compile Include="Tests\HashTests.cs" />
     <Compile Include="Tests\Base64Tests.cs" />
+    <Compile Include="Tests\MessageContainerTests.cs" />
+    <Compile Include="Tests\X509CertTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

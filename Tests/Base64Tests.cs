@@ -25,7 +25,7 @@ namespace CryptLink.Tests {
 			foreach(Hash.HashProvider provider in Enum.GetValues(typeof(Hash.HashProvider))) {
 				var testHash = new Hash("Test String", provider);
 
-				var encodedBytes = Base64.EncodeBytes(testHash.Hashed);
+				var encodedBytes = Base64.EncodeBytes(testHash.HashBytes);
 				var decodedBytes = Base64.DecodeBytes(encodedBytes);
 
 				Assert.True(testHash == decodedBytes);

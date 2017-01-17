@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 
 namespace CryptLink
 {
-    public class Hash : IComparable
-    {
+    public class Hash : IComparable {
         public HashProvider Provider { get; set; }
-        public byte[] Hashed { get; set; }
+        public byte[] HashBytes { get; set; }
         public bool Valid { get; set; }
 
         public Hash(string From, HashProvider HashProvider) {
@@ -33,6 +32,28 @@ namespace CryptLink
         }
 
         /// <summary>
+        /// Gets the number of bytes for the current hash provider
+        /// </summary>
+        public int HashByteLength(bool ZeroIndexed) {
+            return GetHashByteLength(Provider);
+        }
+
+        public static int GetHashByteLength(HashProvider ForProvider) {
+            switch (ForProvider) {
+                case Hash.HashProvider.SHA64:
+                    return 64 / 8;
+                case Hash.HashProvider.SHA128:
+                    return 128 / 8;
+                case Hash.HashProvider.SHA256:
+                    return 256 / 8;
+                case Hash.HashProvider.SHA512:
+                    return 512 / 8;
+                default:
+                    throw new NotImplementedException("Hash provider '" + ForProvider.ToString() + "' not implemented");
+            }
+        }
+
+        /// <summary>
         /// Create a hash object from a b64 encoded byte array
         /// </summary>
         /// <param name="FromBase64">B64 encoded bytes</param>
@@ -40,13 +61,12 @@ namespace CryptLink
         public static Hash FromB64(string FromBase64, HashProvider HashProvider) {
             var h = new Hash();
 
-            h.Hashed = System.Convert.FromBase64CharArray(FromBase64.ToArray<char>(), 0, FromBase64.Length);
+            h.HashBytes = System.Convert.FromBase64CharArray(FromBase64.ToArray<char>(), 0, FromBase64.Length);
             h.Provider = HashProvider;
 
             return h;
         }
-
-
+        
         /// <summary>
         /// Create a hash object from a X509 Cert
         /// </summary>
@@ -71,24 +91,23 @@ namespace CryptLink
         /// <param name="HashProvider">The provider that calculated the hash, if null assume SHA256</param>
         public static Hash FromBinaryHash(byte[] HashBytes, HashProvider? HashProvider) {
             var h = new Hash();
-            h.Hashed = HashBytes;
+            h.HashBytes = HashBytes;
 
             if (HashProvider.HasValue) {
                 h.Provider = HashProvider.Value;
             } else {
                 h.Provider = Hash.HashProvider.SHA256;
             }
-            
+
             return h;
         }
-
 
         /// <summary>
         /// Computes the hash from a bute[] and sets the HashProvider
         /// </summary>
         /// <param name="From">Bytes to compute the hash from</param>
         /// <param name="HashProvider">The crypto provider to compute the hash with</param>
-        private void ComputeHash(byte[] From, HashProvider HashProvider){
+        private void ComputeHash(byte[] From, HashProvider HashProvider) {
             int truncateBytes = 0;
             Provider = HashProvider;
 
@@ -106,13 +125,13 @@ namespace CryptLink
             //hash
             HashAlgorithm hash = HashAlgorithm.Create(HashProvider.ToString());
             hashValue = hash.ComputeHash(From);
-            
+
             //truncate if needed
-            if(truncateBytes > 0) {
-                Hashed = new byte[truncateBytes];
-                Array.Copy(hashValue, Hashed, truncateBytes);
+            if (truncateBytes > 0) {
+                HashBytes = new byte[truncateBytes];
+                Array.Copy(hashValue, HashBytes, truncateBytes);
             } else {
-                Hashed = hashValue;
+                HashBytes = hashValue;
             }
 
         }
@@ -128,21 +147,8 @@ namespace CryptLink
                 return this;
             }
 
-            byte[] newBytes = Combine(Hashed, BitConverter.GetBytes(Seed));
+            byte[] newBytes = HashBytes.Concat(BitConverter.GetBytes(Seed)).ToArray();
             return new Hash(newBytes, Provider);
-        }
-
-        /// <summary>
-        /// Combines byte arrays
-        /// </summary>
-        private byte[] Combine(params byte[][] arrays) {
-            byte[] rv = new byte[arrays.Sum(a => a.Length)];
-            int offset = 0;
-            foreach (byte[] array in arrays) {
-                System.Buffer.BlockCopy(array, 0, rv, offset, array.Length);
-                offset += array.Length;
-            }
-            return rv;
         }
 
         /// <summary>
@@ -150,43 +156,29 @@ namespace CryptLink
         /// </summary>
         /// <returns></returns>
         public override string ToString() {
-            return System.Convert.ToBase64String(Hashed);
+            return Convert.ToBase64String(HashBytes);
         }
 
         public static int Compare(Hash Left, Hash Right) {
-            return Compare(Left.Hashed, Right.Hashed);
+            if (ReferenceEquals(Right, null)) {
+                return -1;
+            } else if (ReferenceEquals(Left, null)) {
+                return 1;
+            }
+
+            return Compare(Left.HashBytes, Right.HashBytes);
         }
 
-        public static int Compare(object Left, object Right) {
-            byte[] bLeft = new byte[] { 0x00 };
-            byte[] bRight;
+        public static int Compare(byte[] Left, Hash Right) {
+            return Compare(Left, Right.HashBytes);
+        }
 
-            if (Left is Hash) {
-                var h = (Hash)Left;
-                bLeft = h.Hashed;
-            } else if (Left is byte[]) {
-                bLeft = (byte[])Left;
-            } else {
-                throw new NotImplementedException("Can't compare CryptLink.Hash to a type of '" +
-                    Left.GetType().ToString() + "'. Valid types are CryptLink.Hash and byte[]");
-            }
-
-            if (Right is Hash) {
-                var h = (Hash)Right;
-                bRight = h.Hashed;
-            } else if (Right is byte[]) {
-                bRight = (byte[])Right;
-            } else {
-                bRight = new byte[] { 0x00 };
-                throw new NotImplementedException("Can't compare CryptLink.Hash to a type of '" +
-                    Right.GetType().ToString() + "'. Valid types are CryptLink.Hash and byte[]");
-            }
-
-            return Compare(bLeft, bRight);
+        public static int Compare(Hash Left, byte[] Right) {
+            return Compare(Left.HashBytes, Right);
         }
 
         /// <summary>
-        /// Implement IComparable so that hashes can be compared and ordered in the ConsistantHash table
+        /// Compares two byte arrays of any length
         /// </summary>
         /// <returns>1, 0 or -1</returns>
         public static int Compare(byte[] Left, byte[] Right) {
@@ -195,8 +187,6 @@ namespace CryptLink
             //the hashes could be a different length, that's okay, we'll only compare the shared bits
             compareLength = Math.Min(Left.Length, Right.Length);
 
-            //Compare by finding the first different bit, this should allow for very efficient comparisons
-            //if there are no different bytes, continue
             if (BitConverter.IsLittleEndian) {
                 //read in Little Endian order
                 for (int i = 0; i < compareLength; i++) {
@@ -216,57 +206,93 @@ namespace CryptLink
                     }
                 }
             }
-            
+
             //All the shared bits are the same, so return the longer hash
-            //this should prevent lower bit (less secure) collisions being equal to longer hashes
             if (Left.Length > Right.Length) {
                 return 1;
             } else if (Left.Length < Right.Length) {
                 return -1;
             }
-            
-            //if they are the same length, they are equal
+
+            //Same bits and length, arrays are equal
             return 0;
         }
 
-        //Below here are references to Compare() required for c# comparisons and operators ------
-        //note that equality is compared on the data, not on reference
+        #region // ICompariable methods
+
+        public int CompareTo(byte[] Bytes) {
+            return Compare(this, Bytes);
+        }
+
+        public int CompareTo(Hash HashObject) {
+            return Compare(this.HashBytes, HashObject.HashBytes);
+        }
 
         public int CompareTo(object obj) {
-            return Compare(this, obj);
+            if (obj == null) {
+                return 1;
+            } else if (obj is Hash) {
+                return CompareTo((Hash)obj);
+            } else if (obj is byte[]) {
+                return CompareTo((byte[])obj);
+            }
+
+            return 1;
         }
 
-        public int CompareTo(Hash obj) {
-            return Compare(this.Hashed, obj.Hashed);
+        public static explicit operator byte[] (Hash b) {
+            return b.HashBytes;
         }
 
+        /// <summary>
+        /// Compare to object, will always return false for any object that is not Hash or byte[] 
+        /// (Required for IComparable)
+        /// </summary>
         public override bool Equals(object obj) {
-            return CompareTo(obj) == 0;
+            if (obj is Hash) {
+                return CompareTo((Hash)obj) == 0;
+            } else if (obj is byte[]) {
+                return CompareTo((byte[])obj) == 0;
+            }
+
+            return false;
         }
 
-        public bool Equals(Hash obj) {
-            return CompareTo(obj) == 0;
+        public bool Equals(Hash HashObject) {
+            return CompareTo(HashObject) == 0;
         }
+
+        #endregion 
 
         /// <summary>
         /// Depreciated and implemented for compatibility only, this hash is expressed as a Int32 (only 4 bytes).
         /// (Needed for OverrideGetHashCodeOnOverridingEquals)
         /// </summary>
         public override int GetHashCode() {
-            return BitConverter.ToInt32(Hashed, 0);
+            return BitConverter.ToInt32(HashBytes, 0);
+        }
+        
+        #region // All common operators needed for boolean operations
+
+        /*  ==  Equals */
+        public static bool operator ==(Hash Left, byte[] Right) {
+            return Compare(Left, Right) == 0;
         }
 
-
-        //Operators for doing boolean comparisons: (Hash1 > Hash2) returns a bool
-        public static bool operator ==(Hash Left, object Right) {
+        public static bool operator ==(byte[] Left, Hash Right) {
             return Compare(Left, Right) == 0;
         }
 
         public static bool operator ==(Hash Left, Hash Right) {
             return Compare(Left, Right) == 0;
         }
+        
+        /*  !=  Not equals */
+        public static bool operator !=(Hash Left, byte[] Right) {
+            return Compare(Left, Right) != 0;
+        }
 
-        public static bool operator !=(Hash Left, object Right) {
+        public static bool operator !=(byte[] Left, Hash Right) {
             return Compare(Left, Right) != 0;
         }
 
@@ -274,7 +300,12 @@ namespace CryptLink
             return Compare(Left, Right) != 0;
         }
 
-        public static bool operator >(Hash Left, object Right) {
+        /*  >  More than */
+        public static bool operator >(Hash Left, byte[] Right) {
+            return Compare(Left, Right) > 0;
+        }
+
+        public static bool operator >(byte[] Left, Hash Right) {
             return Compare(Left, Right) > 0;
         }
 
@@ -282,7 +313,8 @@ namespace CryptLink
             return Compare(Left, Right) > 0;
         }
 
-        public static bool operator <(Hash Left, object Right) {
+        /*  <  Less than */
+        public static bool operator <(Hash Left, byte[] Right) {
             return Compare(Left, Right) < 0;
         }
 
@@ -290,7 +322,12 @@ namespace CryptLink
             return Compare(Left, Right) < 0;
         }
 
-        public static bool operator >=(Hash Left, object Right) {
+        public static bool operator <(byte[] Left, Hash Right) {
+            return Compare(Left, Right) < 0;
+        }
+
+        /*  =>  More than or equals */
+        public static bool operator >=(Hash Left, byte[] Right) {
             return Compare(Left, Right) >= 0;
         }
 
@@ -298,13 +335,24 @@ namespace CryptLink
             return Compare(Left, Right) >= 0;
         }
 
-        public static bool operator <=(Hash Left, object Right) {
+        public static bool operator >=(byte[] Left, Hash Right) {
+            return Compare(Left, Right) >= 0;
+        }
+
+        /*  <=  Less than or equals */
+        public static bool operator <=(Hash Left, byte[] Right) {
             return Compare(Left, Right) <= 0;
         }
 
         public static bool operator <=(Hash Left, Hash Right) {
             return Compare(Left, Right) <= 0;
         }
+
+        public static bool operator <=(byte[] Left, Hash Right) {
+            return Compare(Left, Right) <= 0;
+        }
+
+        #endregion
 
         public enum HashProvider {
             SHA64,

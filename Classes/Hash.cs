@@ -14,22 +14,39 @@ namespace CryptLink
         public byte[] HashBytes { get; set; }
         public bool Valid { get; set; }
 
-        public Hash(string From, HashProvider HashProvider) {
+        /// <summary>
+        /// Creates a new hash instance from a string that will be hashed
+        /// </summary>
+        /// <param name="StringToHash">String used to compute the hash</param>
+        /// <param name="HashProvider"></param>
+        public Hash(string StringToHash, HashProvider HashProvider) {
             UnicodeEncoding UE = new UnicodeEncoding();
-            ComputeHash(UE.GetBytes((string)From), HashProvider);
+            ComputeHash(UE.GetBytes((string)StringToHash), HashProvider);
 
-            if (string.IsNullOrWhiteSpace(From)) {
+            if (string.IsNullOrWhiteSpace(StringToHash)) {
                 Valid = false;
             } else {
                 Valid = true;
             }
         }
 
-        public Hash() { }
+        /// <summary>
+        /// Creates a new hash instance from an array of bytes that will be hashed
+        /// </summary>
+        /// <param name="BytesToHash">Bytes used to compute the hash</param>
+        public Hash(byte[] BytesToHash, HashProvider HashProvider) {
 
-        public Hash(byte[] From, HashProvider HashProvider) {
-            ComputeHash(From, HashProvider);
+            if (BytesToHash == null) {
+                Valid = false;
+            } else {
+                Valid = true;
+            }
+
+            ComputeHash(BytesToHash, HashProvider);
+
         }
+
+        public Hash() { }
 
         /// <summary>
         /// Gets the number of bytes for the current hash provider
@@ -61,7 +78,7 @@ namespace CryptLink
         public static Hash FromB64(string FromBase64, HashProvider HashProvider) {
             var h = new Hash();
 
-            h.HashBytes = System.Convert.FromBase64CharArray(FromBase64.ToArray<char>(), 0, FromBase64.Length);
+            h.HashBytes = Base64.DecodeBytes(FromBase64);
             h.Provider = HashProvider;
 
             return h;
@@ -89,16 +106,10 @@ namespace CryptLink
         /// </summary>
         /// <param name="HashBytes">The value of the hash</param>
         /// <param name="HashProvider">The provider that calculated the hash, if null assume SHA256</param>
-        public static Hash FromBinaryHash(byte[] HashBytes, HashProvider? HashProvider) {
+        public static Hash FromBinaryHash(byte[] HashBytes, HashProvider HashProvider) {
             var h = new Hash();
             h.HashBytes = HashBytes;
-
-            if (HashProvider.HasValue) {
-                h.Provider = HashProvider.Value;
-            } else {
-                h.Provider = Hash.HashProvider.SHA256;
-            }
-
+            h.Provider = HashProvider;
             return h;
         }
 
@@ -137,18 +148,19 @@ namespace CryptLink
         }
 
         /// <summary>
-        /// Generate a new hash, based on this with an added seed. 
+        /// Generate a new hash, by re-hashing the current bytes
         /// Used for making a new re-producible hash(s) for distributing in a ConsistentHash table
         /// </summary>
-        /// <param name="Seed">Added to hash before re-hashing, a zero seed does not affect the hash</param>
-        /// <returns>A new hash</returns>
-        public Hash Rehash(int Seed) {
-            if (Seed == 0) {
-                return this;
-            }
+        public Hash Rehash() {
 
-            byte[] newBytes = HashBytes.Concat(BitConverter.GetBytes(Seed)).ToArray();
-            return new Hash(newBytes, Provider);
+            var h = new Hash() {
+                Provider = Provider,
+                Valid = true
+            };
+
+            h.ComputeHash(HashBytes, Provider);
+
+            return h;
         }
 
         /// <summary>

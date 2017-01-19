@@ -92,10 +92,12 @@ namespace CryptLink
         /// <param name="ReplicationWeight">Nodes are added multiple times to the namespace to allow for better 
         /// distribution of peers in the address space, the higher the weight the more likely the node will be found while searching</param>
         public void Add(T node, Hash nodeHash, bool updateKeyArray, int ReplicationWeight) {
-            
+            circle[nodeHash] = node;
+            var rehashed = nodeHash;          
+
             for (int i = 0; i < ReplicationWeight; i++) {
-                var rHash = nodeHash.Rehash(i);
-                circle[rHash] = node;
+                rehashed = rehashed.Rehash();
+                circle[rehashed] = node;
             }
 
             if (unreplicatedNodes.ContainsKey(nodeHash) == false) {
@@ -122,8 +124,11 @@ namespace CryptLink
         public void Remove(T node, Hash nodeHash) {
             int replicationWeight = replicationWeights[nodeHash];
 
+            Hash newHash = nodeHash;
+
             for (int i = 0; i < replicationWeight; i++) {
-                Hash newHash = nodeHash.Rehash(i);
+                newHash = nodeHash.Rehash();
+
                 if (!circle.Remove(newHash)) {
                     throw new Exception("Error removing replicated hashes, this should only happen if: " +
                     "1. There was a hash collision, 2. The key array was modified outside of this logic");
@@ -166,7 +171,7 @@ namespace CryptLink
         }
 
         public T GetNode(byte[] key) {
-            Hash h = Hash.FromBinaryHash(key, null);
+            Hash h = Hash.FromBinaryHash(key, Provider);
             int first = First_ge(h);
             return circle[ayKeys[first]];
         }

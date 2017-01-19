@@ -37,26 +37,30 @@ namespace CryptLink {
                 ).ToArray();
         }
 
-        public static int ByteCount(Hash.HashProvider ForProvider, int PayloadBytes) {
+        public static int ByteCount(Hash.HashProvider ForProvider, int PayloadBytes, bool ZeroIndexed) {
             int pl = Hash.GetHashByteLength(ForProvider);
-            return intLength + (pl * 3);
+
+            if (ZeroIndexed) {
+                return intLength + PayloadBytes + (pl * 3);
+            } else {
+                return intLength + PayloadBytes + (pl * 3) + 1;
+            }
+            
         }
 
         /// <summary>
         /// Non-zero index byte length
         /// </summary>
         public int ByteLength(bool ZeroIndexed) {
-            return ByteCount(Provider, Payload.Length);
+            return ByteCount(Provider, Payload.Length, ZeroIndexed);
         }
 
-        public static MessageContainer FromBinary(byte[] Blob) {
+        public static MessageContainer FromBinary(byte[] Blob, bool EnforceHashCheck) {
 
             //check basic validity
-            if (BitConverter.IsLittleEndian) {
-                throw new NotImplementedException("Little Endian not yet supported");
-            } else if (Blob == null) {
+            if (Blob == null) {
                 throw new ArgumentNullException("Blob must not be null");
-            } else if (Blob.Length < 101) {
+            } else if (Blob.Length < 29) {
                 //4 bytes for provider (int), (32 / 8) * 3 for sender, receiver and hash bits
                 throw new ArgumentOutOfRangeException("Blob is too short for any hash provider");
             }
@@ -74,7 +78,7 @@ namespace CryptLink {
             int hashLength = Hash.GetHashByteLength(provider);
 
             //check provider specific minimum length
-            int minLength = intLength + (hashLength * sizeof(int));
+            int minLength = ByteCount(provider, 0, false);
             if (Blob.Length < minLength) {
                 throw new ArgumentOutOfRangeException("Blob is too short for specified hash provider");
             }
@@ -104,7 +108,10 @@ namespace CryptLink {
             }
 
             //verify hash
-            if (container.GetHash(container.Provider) == hash) {
+            var newHash = container.GetHash(container.Provider);
+            var oldHash = new Hash(hash, provider);
+
+            if (newHash == oldHash || EnforceHashCheck == false) {
                 return container;
             } else {
                 throw new FormatException("Provided hash was different than the actual hash, data is invalid or modified.");

@@ -55,6 +55,13 @@ namespace CryptLink {
             return ByteCount(Provider, Payload.Length, ZeroIndexed);
         }
 
+        public override string ToString() {
+            return "Sender: '" + SenderHash.ToString() + 
+                "', Receiver: '" + ReceiverHash.ToString() +
+                "', Payload length: " + Payload.Length.ToString() +
+                "', Hash: '" + GetHash(Provider).ToString();
+        }
+
         public static MessageContainer FromBinary(byte[] Blob, bool EnforceHashCheck) {
 
             //check basic validity
@@ -87,29 +94,29 @@ namespace CryptLink {
             byte[] receiver = new byte[hashLength];
             byte[] hash = new byte[hashLength];
 
-            Array.Copy(Blob, intLength, sender, 0, hashLength);
-            Array.Copy(Blob, intLength + hashLength, receiver, 0, hashLength);
+            Array.Copy(Blob, intLength + 1, sender, 0, hashLength);
+            Array.Copy(Blob, intLength + hashLength + 1, receiver, 0, hashLength);
             Array.Copy(Blob, Blob.Length - hashLength, hash, 0, hashLength);
 
             //parse out the hashes
             MessageContainer container = new MessageContainer(
-                new Hash(sender, provider),
-                new Hash(receiver, provider),
+                Hash.FromBinaryHash(sender, provider),
+                Hash.FromBinaryHash(receiver, provider),
                 provider
             );
             
             //get the payload
-            int payloadStart = intLength + (hashLength * 2);
+            int payloadStart = intLength + (hashLength * 2) + 1;
             int payloadLength = Blob.Length - (payloadStart + hashLength);
 
             if (payloadLength > 0) {
-                container.Payload = new byte[hashLength];
+                container.Payload = new byte[payloadLength];
                 Array.Copy(Blob, payloadStart, container.Payload, 0, payloadLength);
             }
 
             //verify hash
             var newHash = container.GetHash(container.Provider);
-            var oldHash = new Hash(hash, provider);
+            var oldHash = Hash.FromBinaryHash(hash, provider);
 
             if (newHash == oldHash || EnforceHashCheck == false) {
                 return container;

@@ -11,7 +11,6 @@ namespace CryptLink.Tests {
 
         [Test]
         public void MessageContainerTest1() {
-            var intLength = sizeof(int);
 
             foreach (Hash.HashProvider provider in Enum.GetValues(typeof(Hash.HashProvider))) {
                 var testContainer = new MessageContainer(
@@ -41,7 +40,18 @@ namespace CryptLink.Tests {
                 int expectedIntLength = testContainer.ByteLength(false);
                 Assert.AreEqual(binaryLength, expectedIntLength, "Binary length (int payload)");
 
-                var deseralizedContainer = MessageContainer.FromBinary(binaryContainer);
+                var deseralizedContainer = MessageContainer.FromBinary(binaryContainer, true);
+
+                //test that the b64 version of the container is the same for the original 
+                var deseralizedContainerB64 = Base64.EncodeBytes(deseralizedContainer.ToBinary());
+                var testContainerB64 = Base64.EncodeBytes(testContainer.ToBinary());
+                Assert.AreEqual(deseralizedContainerB64, testContainerB64, "Bytes from old and new containers are the same");
+
+                //test that a modified hash does not parse correctly
+                binaryContainer = binaryContainer.Concat(Utility.GetBytes(2)).ToArray();
+
+                var ex = Assert.Throws<FormatException>(() => MessageContainer.FromBinary(binaryContainer, true));
+                Assert.NotNull(ex);
 
                 Assert.AreEqual(testContainer.Encrypted, deseralizedContainer.Encrypted, "Deserialized container flag Encrypted");
                 Assert.AreEqual(testContainer.SenderHash.HashBytes, deseralizedContainer.SenderHash.HashBytes, "Deserialized container flag SenderHash");
@@ -52,7 +62,7 @@ namespace CryptLink.Tests {
                 Assert.AreEqual(testContainer.GetHash(provider).HashByteLength(false), deseralizedContainer.GetHash(provider).HashByteLength(false), "Deserialized container flag HashByteLength");
 
                 var r = new Random();
-                testContainer.Payload = Crypto.GetBytes((int)(r.NextDouble() * 1000));
+				testContainer.Payload = Utility.GetBytes((int)(r.NextDouble() * 1024 * 128)); //up to 128k
                 binaryLength = testContainer.ToBinary().Length;
                 int expectedRandomLength = testContainer.ByteLength(false);
                 Assert.AreEqual(binaryLength, expectedRandomLength, "Binary length (random payload)");

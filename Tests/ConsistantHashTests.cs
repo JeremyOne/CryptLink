@@ -25,7 +25,8 @@ namespace CryptLink.Tests {
                 Hash lastHash = new Hash();
                 
                 for (int i = 0; i < testSize; i++) {
-                    lastHash = chStrings1.Add(new HashableString(i.ToString()), false, 1);
+                    var h = new HashableString(i.ToString());
+                    lastHash = chStrings1.Add(h, false, 0);
                 }
 
                 //smaller hash sizes may have collisions and effect the total number of items in the array

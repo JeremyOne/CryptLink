@@ -31,7 +31,7 @@ namespace CryptLink.Tests {
         }
 
 		[Test()]
-		public void TestUtilityPad() {
+		public void TestUtilityCertCompare() {
 			Assert.AreEqual(Utility.CalculatePadLength(0, 1024), 1024, "Minimum length returned");
 
 			Assert.AreEqual(Utility.CalculatePadLength(1024, 0), 1024, "1024 returns 1024");
@@ -60,7 +60,7 @@ namespace CryptLink.Tests {
 
             Assert.False(Utility.VerifyCert(selfSignedCert, false, false, null), "Self-signed cert fails with strict root enforcement");
             Assert.False(Utility.VerifyCert(selfSignedCert, true, true, null), "Self-signed cert fails when checking revocation status");
-            //more variations of tests in X509CertTests.cs
+            //Note: more variations of tests in X509CertTests.cs
         }
     }
 }

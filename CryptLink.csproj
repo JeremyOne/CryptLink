@@ -76,8 +76,6 @@
     <Compile Include="Tests\Base64Tests.cs" />
     <Compile Include="Tests\MessageContainerTests.cs" />
     <Compile Include="Tests\X509CertTests.cs" />
-    <Compile Include="Classes\Block.cs" />
-    <Compile Include="Classes\BlockChain.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

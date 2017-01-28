@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -51,15 +52,17 @@ namespace CryptLink.Tests {
         [Test()]
         public void TestVerifyCert() {
             var testCert = Utility.GetCertFromUrl(new Uri("https://google.com"));
-            Assert.True(Utility.VerifyCert(testCert, false, true, null));
+            Assert.True(Utility.VerifyCert(testCert, false, X509RevocationMode.Online, null));
 
             var selfSignedCert = new X509Certificate2Builder() {
-                SubjectName = "Test CA",
+                SubjectName = "CN=Test CA",
                 KeyStrength = 2048
             }.Build();
 
-            Assert.False(Utility.VerifyCert(selfSignedCert, false, false, null), "Self-signed cert fails with strict root enforcement");
-            Assert.False(Utility.VerifyCert(selfSignedCert, true, true, null), "Self-signed cert fails when checking revocation status");
+            Assert.False(Utility.VerifyCert(selfSignedCert, false, X509RevocationMode.NoCheck, null), "Self-signed cert fails with strict root enforcement");
+            Assert.True(Utility.VerifyCert(selfSignedCert, true, X509RevocationMode.NoCheck, null), "Self-signed okay without root check");
+            Assert.False(Utility.VerifyCert(selfSignedCert, true, X509RevocationMode.Online, null), "Self-signed cert fails when checking revocation status");
+            
             //Note: more variations of tests in X509CertTests.cs
         }
     }

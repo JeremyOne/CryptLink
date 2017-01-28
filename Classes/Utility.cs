@@ -152,7 +152,7 @@ namespace CryptLink {
         /// <param name="CustomCA">If provided, added to the ExtraStore for CA search</param>
         /// <param name="Intermediates">Other intermediate certs to include for checking the chain</param>
         /// <returns>True if valid</returns>
-        public static bool VerifyCert(X509Certificate2 Cert, bool AllowUnknownCA, bool CheckRevocationStatus,
+        public static bool VerifyCert(X509Certificate2 Cert, bool AllowUnknownCA, X509RevocationMode CheckRevocationMode,
             X509Certificate2 CustomCA, params X509Certificate2[] Intermediates) {
 
             X509Chain chain = new X509Chain();
@@ -161,10 +161,8 @@ namespace CryptLink {
             if (AllowUnknownCA) {
                 chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
             }
-
-            if (CheckRevocationStatus == false) {
-                chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-            }
+            
+            chain.ChainPolicy.RevocationMode = CheckRevocationMode;
 
             if (CustomCA != null) {
                 chain.ChainPolicy.ExtraStore.Add(CustomCA);
@@ -178,11 +176,11 @@ namespace CryptLink {
             string log = "";
             try {
                 var chainBuilt = chain.Build(Cert);
-                log += (string.Format("Chain building status: {0}", chainBuilt));
+                log += (string.Format("Chain built: {0}. ", chainBuilt));
 
                 if (chainBuilt == false) {
                     foreach (X509ChainStatus chainStatus in chain.ChainStatus) {
-                        log += (string.Format("Chain error: {0} {1}", chainStatus.Status, chainStatus.StatusInformation));
+                        log += (string.Format("Chain error, status: {0}, Info: {1}. ", chainStatus.Status, chainStatus.StatusInformation));
                     }
 
                     return false;

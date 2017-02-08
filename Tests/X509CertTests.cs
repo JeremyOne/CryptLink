@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using static CryptLink.X509Certificate2Extentions;
 
 namespace CryptLink.Tests {
 

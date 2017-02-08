@@ -17,6 +17,7 @@ namespace CryptLink {
 	/// Helper functions for common RNG generation and other tasks
 	/// </summary>
     public class Utility {
+
         static RNGCryptoServiceProvider RNG = new RNGCryptoServiceProvider();
 
         public static Guid GenerateCryptoGuid() {
@@ -51,7 +52,7 @@ namespace CryptLink {
 
 		/// <summary>
 		/// Calculates padding based on powers of 2
-		/// First power of two greater than the lengh, then subtract blocks of Pow2 / 8
+		/// First power of two greater than the length, then subtract blocks of Pow2 / 8
 		/// </summary>
 		/// <returns>The desired pad.</returns>
 		public static long CalculatePadLength(long ActualLength, long MinLength){
@@ -227,5 +228,22 @@ namespace CryptLink {
             }
             
         }
+
+        static byte[] Sign<T>(T HashableItem, Hash.HashProvider Provider, X509Certificate2 SigningCert) where T : Hashable {
+            RSACryptoServiceProvider csp = null;
+            csp = (RSACryptoServiceProvider)SigningCert.PrivateKey;
+            byte[] hash = HashableItem.GetHash(Provider).HashBytes;
+            var providerOID = CryptoConfig.MapNameToOID(Provider.ToString());
+            return csp.SignHash(hash, providerOID);
+        }
+
+        static bool Verify<T>(T HashableItem, byte[] signature, Hash.HashProvider Provider, X509Certificate2 VerifyCert) where T : Hashable {
+            RSACryptoServiceProvider csp = (RSACryptoServiceProvider)VerifyCert.PublicKey.Key;
+            var providerOID = CryptoConfig.MapNameToOID(Provider.ToString());
+            byte[] hash = HashableItem.GetHash(Provider).HashBytes;
+            return csp.VerifyHash(hash, providerOID, signature);
+        }
+
+        
     }
 }

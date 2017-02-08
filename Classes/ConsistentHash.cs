@@ -20,7 +20,8 @@ namespace CryptLink
     /// works by putting content in the host with the next most similar hash
     /// </summary>
     /// <typeparam name="T">Type of object to store, must be an abstract class of Hashable</typeparam>
-    class ConsistentHash<T> {
+    class ConsistentHash<T> where T : Hashable {
+
         SortedDictionary<Hash, T> circle = new SortedDictionary<Hash, T>();
         SortedDictionary<Hash, T> unreplicatedNodes = new SortedDictionary<Hash, T>();
         Dictionary<Hash, int> replicationWeights = new Dictionary<Hash, int>();
@@ -30,10 +31,6 @@ namespace CryptLink
 
         public ConsistentHash(Hash.HashProvider _Provider){
             Provider = _Provider;
-        }
-
-        private static bool IsHashable(object obj) {
-            return obj.GetType().IsSubclassOf(typeof(Hashable));
         }
 
         /// <summary>
@@ -46,30 +43,6 @@ namespace CryptLink
         }
 
         /// <summary>
-        /// Gets a Hash object from a object that inherits from Hashable
-        /// </summary>
-        /// <param name="fromObject">Object to hash</param>
-        public Hash GetHash(object fromObject) {
-            return GetHash(fromObject, Provider);
-        }
-
-        /// <summary>
-        /// Gets a Hash object from a object that inherits from Hashable
-        /// </summary>
-        /// <param name="fromObject">Object to hash</param>
-        /// <param name="Provider">The hash provider to hash with</param>
-        public static Hash GetHash(object fromObject, Hash.HashProvider Provider) {
-            if(fromObject == null){
-                throw new ArgumentException("Object can't be null");
-            } else if (IsHashable(fromObject)) {
-                var h = (Hashable)fromObject;
-                return h.GetHash(Provider);
-            } else {
-                throw new ArgumentException("Provided object does not abstract from Hashable, can't use this interface.");
-            }
-        }
-
-        /// <summary>
         /// Adds a node, runs replication
         /// </summary>
         /// <param name="node">Item to store, must be abstracted from Hashable</param>
@@ -78,9 +51,9 @@ namespace CryptLink
         /// distribution of peers in the address space, the higher the weight the more likely the node will be found while searching</param>
         /// <returns>The first hash of the node (If ReplicationWeight is more than 1, there is more than one hash of the item in the table)</returns>
         public Hash Add(T node, bool updateKeyArray, int ReplicationWeight) {
-            var Hash = GetHash(node);
-            Add(node, Hash, updateKeyArray, ReplicationWeight);
-            return Hash;
+            var nodeHash = node.GetHash(Provider);
+            Add(node, nodeHash, updateKeyArray, ReplicationWeight);
+            return nodeHash;
         }
 
         /// <summary>

@@ -11,12 +11,7 @@ namespace CryptLink.Tests {
 
         [Test]
         public void ConsistantHashTests1() {
-            var testSize = 10000;
-            var colissions = new Dictionary<Hash.HashProvider, int>();
-            colissions.Add(Hash.HashProvider.SHA64, 9535);
-            colissions.Add(Hash.HashProvider.SHA128, 9998);
-            colissions.Add(Hash.HashProvider.SHA256, 10000);
-            colissions.Add(Hash.HashProvider.SHA512, 10000);
+            var testSize = 5000;
 
             foreach (Hash.HashProvider provider in Enum.GetValues(typeof(Hash.HashProvider))) {
 
@@ -29,15 +24,12 @@ namespace CryptLink.Tests {
                     lastHash = chStrings1.Add(h, false, 0);
                 }
 
-                //smaller hash sizes may have collisions and effect the total number of items in the array
-                var colisionSize = colissions[provider];
-
-                Assert.AreEqual(chStrings1.AllNodes.Count, colisionSize, "Added all nodes in: " + (startTime - DateTime.Now).TotalMilliseconds);
+                Assert.AreEqual(chStrings1.AllNodes.Count, testSize, "Added all nodes in: " + (DateTime.Now - startTime).TotalMilliseconds + "MS");
 
                 DateTime startTime2 = DateTime.Now;
                 chStrings1.UpdateKeyArray();
 
-                Assert.AreEqual(chStrings1.AllNodes.Count, colisionSize, "Updated key in: " + (startTime2 - DateTime.Now).TotalMilliseconds);
+                Assert.AreEqual(chStrings1.AllNodes.Count, testSize, "Updated key in: " + (DateTime.Now - startTime2).TotalMilliseconds + "MS");
                 Assert.True(chStrings1.ContainsNode(lastHash));
                 
             }

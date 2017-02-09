@@ -19,7 +19,7 @@ namespace CryptLink.Tests {
                     provider
                 );
 
-                var hashLength = Hash.GetHashByteLength(provider);
+                var hashLength = Hash.GetProviderByteLength(provider);
                 byte[] firstHash = testContainer.GetHash(provider).HashBytes;
 
                 Assert.NotNull(firstHash, "Computed hash has data");

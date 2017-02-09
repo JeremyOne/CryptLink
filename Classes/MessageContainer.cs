@@ -38,7 +38,7 @@ namespace CryptLink {
         }
 
         public static int ByteCount(Hash.HashProvider ForProvider, int PayloadBytes, bool ZeroIndexed) {
-            int pl = Hash.GetHashByteLength(ForProvider);
+            int pl = Hash.GetProviderByteLength(ForProvider);
 
             if (ZeroIndexed) {
                 return intLength + PayloadBytes + (pl * 3);
@@ -82,7 +82,7 @@ namespace CryptLink {
                 throw new IndexOutOfRangeException("Invalid provider type");
             }
 
-            int hashLength = Hash.GetHashByteLength(provider);
+            int hashLength = Hash.GetProviderByteLength(provider);
 
             //check provider specific minimum length
             int minLength = ByteCount(provider, 0, false);

@@ -52,22 +52,28 @@ namespace CryptLink
         /// Gets the number of bytes for the current hash provider
         /// </summary>
         public int HashByteLength(bool ZeroIndexed) {
-            return GetHashByteLength(Provider);
+            return GetProviderByteLength(Provider);
         }
 
-        public static int GetHashByteLength(HashProvider ForProvider) {
+        public static int GetProviderByteLength(HashProvider ForProvider) {
             switch (ForProvider) {
-                case Hash.HashProvider.SHA64:
-                    return 64 / 8;
-                case Hash.HashProvider.SHA128:
-                    return 128 / 8;
+                case Hash.HashProvider.MD5:
+                    return 16;
+                case Hash.HashProvider.SHA1:
+                    return 20;
                 case Hash.HashProvider.SHA256:
-                    return 256 / 8;
+                    return 32;
+                case Hash.HashProvider.SHA384:
+                    return 48;
                 case Hash.HashProvider.SHA512:
-                    return 512 / 8;
+                    return 64;
                 default:
-                    throw new NotImplementedException("Hash provider '" + ForProvider.ToString() + "' not implemented");
+                    throw new NotImplementedException("Hash provider '" + ForProvider.ToString() + "' not implemented in GetHashByteLength");
             }
+        }
+
+        public static string GetOIDForProvider(HashProvider Provider) {
+            return CryptoConfig.MapNameToOID(Provider.ToString());
         }
 
         /// <summary>
@@ -121,15 +127,6 @@ namespace CryptLink
         private void ComputeHash(byte[] From, HashProvider HashProvider) {
             int truncateBytes = 0;
             Provider = HashProvider;
-
-            //set the provider for truncated types
-            if (HashProvider == HashProvider.SHA128) {
-                HashProvider = HashProvider.SHA256;
-                truncateBytes = 16;
-            } else if (HashProvider == HashProvider.SHA64) {
-                HashProvider = HashProvider.SHA256;
-                truncateBytes = 8;
-            }
 
             byte[] hashValue;
 
@@ -367,9 +364,10 @@ namespace CryptLink
         #endregion
 
         public enum HashProvider {
-            SHA64,
-            SHA128,
+            MD5,
+            SHA1,
             SHA256,
+            SHA384,
             SHA512
         }
     }

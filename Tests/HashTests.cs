@@ -150,6 +150,26 @@ namespace CryptLink.Tests {
             }
         }
 
+        [Test()]
+        public void HashProviderToOID() {
+            var providerOIDs = new Dictionary<Hash.HashProvider, string>();
+            providerOIDs.Add(Hash.HashProvider.MD5, "1.2.840.113549.2.5");
+            providerOIDs.Add(Hash.HashProvider.SHA1, "1.3.14.3.2.26");
+            providerOIDs.Add(Hash.HashProvider.SHA256, "2.16.840.1.101.3.4.2.1");
+            providerOIDs.Add(Hash.HashProvider.SHA384, "2.16.840.1.101.3.4.2.2");
+            providerOIDs.Add(Hash.HashProvider.SHA512, "2.16.840.1.101.3.4.2.3");
+
+            foreach (Hash.HashProvider provider in Enum.GetValues(typeof(Hash.HashProvider))) {
+                Assert.True(providerOIDs.ContainsKey(provider), "Test dictionary contains providers.");
+
+                var providerOIDLookup = providerOIDs[provider];
+                var providerOID = Hash.GetOIDForProvider(provider);
+
+                Assert.AreEqual(providerOIDLookup, providerOID);
+            }
+                
+        }
+
     }
 
 }

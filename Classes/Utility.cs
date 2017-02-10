@@ -229,18 +229,35 @@ namespace CryptLink {
             
         }
 
+        /// <summary>
+        /// Signs any Hashable item
+        /// </summary>
+        /// <typeparam name="T">The type</typeparam>
+        /// <param name="HashableItem">Object to sign</param>
+        /// <param name="Provider">Hash provider</param>
+        /// <param name="SigningCert">The cert to sign with</param>
+        /// <returns>A</returns>
         public static byte[] Sign<T>(T HashableItem, Hash.HashProvider Provider, X509Certificate2 SigningCert) where T : Hashable {
-            RSACryptoServiceProvider csp = null;
-            csp = (RSACryptoServiceProvider)SigningCert.PrivateKey;
+            RSACryptoServiceProvider csp = (RSACryptoServiceProvider)SigningCert.PrivateKey;
             byte[] hash = HashableItem.GetHash(Provider).HashBytes;
-            var providerOID = CryptoConfig.MapNameToOID(Provider.ToString());
+            var providerOID = Hash.GetOIDForProvider(Provider);
             return csp.SignHash(hash, providerOID);
         }
 
+
+        /// <summary>
+        /// Verifies any Hashable item against a key and signature
+        /// </summary>
+        /// <typeparam name="T">The type</typeparam>
+        /// <param name="HashableItem">Item to verify</param>
+        /// <param name="signature">Signature Bytes</param>
+        /// <param name="Provider">Hash Provider</param>
+        /// <param name="VerifyCert">The cert to verify against</param>
+        /// <returns></returns>
         public static bool Verify<T>(T HashableItem, byte[] signature, Hash.HashProvider Provider, X509Certificate2 VerifyCert) where T : Hashable {
             RSACryptoServiceProvider csp = (RSACryptoServiceProvider)VerifyCert.PublicKey.Key;
-            var providerOID = CryptoConfig.MapNameToOID(Provider.ToString());
             byte[] hash = HashableItem.GetHash(Provider).HashBytes;
+            var providerOID = Hash.GetOIDForProvider(Provider);
             return csp.VerifyHash(hash, providerOID, signature);
         }
 

@@ -1,8 +1,7 @@
 ﻿# CryptLink
-A peer-to-peer messaging and data storage network that uses client and server side encryption.
+A peer-to-peer messaging and data storage network that uses client and server side encryption. Foster free speech by providing a reliable and safe network
 
 ### First Goals
-* Foster free speech by providing a reliable and safe network to do so
 * Provide a secure and reliable network of storage and messaging to anyone participating
 * All messages and storage to may be end-to-end encrypted or signed by users
 * All server-to-server communications to be encrypted

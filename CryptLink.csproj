@@ -61,6 +61,7 @@
     <Compile Include="Classes\BlockChain.cs" />
     <Compile Include="Classes\BlockItem.cs" />
     <Compile Include="Classes\ConsistentHash.cs" />
+    <Compile Include="Classes\Server.cs" />
     <Compile Include="Classes\Utility.cs" />
     <Compile Include="Classes\Hash.cs" />
     <Compile Include="Classes\Hashable.cs" />
@@ -72,13 +73,6 @@
     <Compile Include="Classes\X509Certificate2Builder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tests\ConsistantHashTests.cs" />
-    <Compile Include="Tests\HashableTests.cs" />
-    <Compile Include="Tests\UtilityTests.cs" />
-    <Compile Include="Tests\HashTests.cs" />
-    <Compile Include="Tests\Base64Tests.cs" />
-    <Compile Include="Tests\MessageContainerTests.cs" />
-    <Compile Include="Tests\X509CertTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CryptLink {
-    class Base64 {
+    public class Base64 {
 
         /// <summary>
-        /// Encodes bytes into url safe base64 (uses _-. instead of /+=)
+        /// Encodes bytes into URL safe base64 (uses _-. instead of /+=)
         /// </summary>
         public static string EncodeBytes(byte[] Bytes) {
             if (Bytes == null) {

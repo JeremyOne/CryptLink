@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CryptLink {
-    class MessageContainer : Hashable {
+    public class MessageContainer : Hashable {
         public Hash SenderHash { get; set; }
         public Hash ReceiverHash { get; set; }
         public Hash.HashProvider Provider { get; set; }

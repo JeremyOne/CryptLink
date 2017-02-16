@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace CryptLink {
 
     /// <summary>
-    /// A simple hashable object used mainly for testing
+    /// A simple Hashable object used mainly for testing
     /// </summary>
-    class HashableString : Hashable {
+    public class HashableString : Hashable {
 
         public HashableString(string _Value) {
             Value = _Value;

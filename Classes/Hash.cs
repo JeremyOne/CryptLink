@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 namespace CryptLink
 {
     public class Hash : IComparable {
-        public HashProvider Provider { get; set; }
-        public byte[] HashBytes { get; set; }
-        public bool Valid { get; set; }
+        public HashProvider Provider { get; private set; }
+        public byte[] HashBytes { get; private set; }
+        public bool Valid { get; private set; }
+
+        static HashAlgorithm[] hashAlgorithms = new HashAlgorithm[Enum.GetNames(typeof(HashProvider)).Length];
 
         /// <summary>
         /// Creates a new hash instance from a string that will be hashed
@@ -131,7 +133,7 @@ namespace CryptLink
             byte[] hashValue;
 
             //hash
-            HashAlgorithm hash = HashAlgorithm.Create(HashProvider.ToString());
+            HashAlgorithm hash = GetHashAlgorithm(HashProvider);
             hashValue = hash.ComputeHash(From);
 
             //truncate if needed
@@ -142,6 +144,19 @@ namespace CryptLink
                 HashBytes = hashValue;
             }
 
+        }
+
+        /// <summary>
+        /// Gets a HashAlgorithm from a HashProvider using a no-search static array
+        /// </summary>
+        private static HashAlgorithm GetHashAlgorithm(HashProvider Provider) {
+            
+            if (hashAlgorithms[(int)Provider] == null) {
+                var h = HashAlgorithm.Create(Provider.ToString());
+                hashAlgorithms[(int)Provider] = h;            
+            }
+
+            return hashAlgorithms[(int)Provider];
         }
 
         /// <summary>
@@ -370,6 +385,7 @@ namespace CryptLink
             SHA384,
             SHA512
         }
+
     }
 
 

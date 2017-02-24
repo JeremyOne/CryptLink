@@ -7,15 +7,29 @@ using System.Threading.Tasks;
 namespace CryptLink {
 
     /// <summary>
-    /// A simple Hashable object used mainly for testing
+    /// A string that can easily be converted to a Hash
     /// </summary>
     public class HashableString : Hashable {
+
 
         public HashableString(string _Value) {
             Value = _Value;
         }
 
-        string Value { get; set; }
+        /// <summary>
+        /// Create a new hashable string 
+        /// </summary>
+        /// <param name="_Value">The string to hash</param>
+        /// <param name="Noramilize">If true, trims whitespace and set to lowercase invariant</param>
+        public HashableString(string _Value, bool Noramilize) {
+            if (Noramilize) {
+                Value = _Value.ToLowerInvariant().Trim();
+            } else {
+                Value = _Value;
+            }
+        }
+
+        public string Value { get; private set; }
 
         public override byte[] HashableData() {
             if (string.IsNullOrEmpty(Value) == false) {

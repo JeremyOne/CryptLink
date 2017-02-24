@@ -20,7 +20,7 @@ namespace CryptLink
         /// Get a Hash object for this class
         /// </summary>
         public Hash GetHash(Hash.HashProvider Provider) {
-            return new Hash(HashableData(), Provider);
+            return Hash.Compute(HashableData(), Provider);
         }
         
         /// <summary>

@@ -239,7 +239,7 @@ namespace CryptLink {
         /// <returns>A</returns>
         public static byte[] Sign<T>(T HashableItem, Hash.HashProvider Provider, X509Certificate2 SigningCert) where T : Hashable {
             RSACryptoServiceProvider csp = (RSACryptoServiceProvider)SigningCert.PrivateKey;
-            byte[] hash = HashableItem.GetHash(Provider).HashBytes;
+            byte[] hash = HashableItem.GetHash(Provider).Bytes;
             var providerOID = Hash.GetOIDForProvider(Provider);
             return csp.SignHash(hash, providerOID);
         }
@@ -256,7 +256,7 @@ namespace CryptLink {
         /// <returns></returns>
         public static bool Verify<T>(T HashableItem, byte[] signature, Hash.HashProvider Provider, X509Certificate2 VerifyCert) where T : Hashable {
             RSACryptoServiceProvider csp = (RSACryptoServiceProvider)VerifyCert.PublicKey.Key;
-            byte[] hash = HashableItem.GetHash(Provider).HashBytes;
+            byte[] hash = HashableItem.GetHash(Provider).Bytes;
             var providerOID = Hash.GetOIDForProvider(Provider);
             return csp.VerifyHash(hash, providerOID, signature);
         }

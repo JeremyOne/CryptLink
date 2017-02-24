@@ -24,17 +24,16 @@ namespace CryptLink {
         public override byte[] HashableData() {
             return BitConverter.GetBytes((int)Provider)
                 .Concat(BitConverter.GetBytes(Encrypted))
-                .Concat(SenderHash.HashBytes)
-                .Concat(ReceiverHash.HashBytes)
+                .Concat(SenderHash.Bytes)
+                .Concat(ReceiverHash.Bytes)
                 .Concat(Payload)
                 .ToArray();
         }
 
         public byte[] ToBinary() {
             return HashableData()
-                .Concat(
-                    GetHash(Provider).HashBytes
-                ).ToArray();
+                .Concat(GetHash(Provider).Bytes)
+                .ToArray();
         }
 
         public static int ByteCount(Hash.HashProvider ForProvider, int PayloadBytes, bool ZeroIndexed) {
@@ -100,8 +99,8 @@ namespace CryptLink {
 
             //parse out the hashes
             MessageContainer container = new MessageContainer(
-                Hash.FromBinaryHash(sender, provider),
-                Hash.FromBinaryHash(receiver, provider),
+                Hash.FromComputedBytes(sender, provider),
+                Hash.FromComputedBytes(receiver, provider),
                 provider
             );
             
@@ -116,7 +115,7 @@ namespace CryptLink {
 
             //verify hash
             var newHash = container.GetHash(container.Provider);
-            var oldHash = Hash.FromBinaryHash(hash, provider);
+            var oldHash = Hash.FromComputedBytes(hash, provider);
 
             if (newHash == oldHash || EnforceHashCheck == false) {
                 return container;

@@ -144,7 +144,7 @@ namespace CryptLink
         }
 
         public T GetNode(byte[] key) {
-            Hash h = Hash.FromBinaryHash(key, Provider);
+            Hash h = Hash.FromComputedBytes(key, Provider);
             int first = First_ge(h);
             return circle[ayKeys[first]];
         }

@@ -1,15 +1,16 @@
 ﻿# CryptLink
-A peer-to-peer messaging and data storage network that uses client and server side encryption. Foster free speech by providing a reliable and safe network
+A open source network that fosters free speech by providing a reliable and safe global scale network.
 
-### First Goals
-* Provide a secure and reliable network of storage and messaging to anyone participating
-* All messages and storage to may be end-to-end encrypted or signed by users
-* All server-to-server communications to be encrypted
-* Allow anyone that would like to start their own network the tools to do so
-* Do not rely on any public resources other than IP routing so it can be run on a censored Internet, or a closed LAN
-* Allow server nodes to be run on any platform supported by Mono (Linux, OS X, BSD, and Windows, including x86, x86-64, ARM, s390, PowerPC)
+## Primary Goals
+* Provide a secure and reliable peer-to-peer-to-client messaging and data storage network
+* Employ strong encryption end-to-end for all clients
+* Employ strong peer to peer (server to server) encryption for all nodes
+* Provide anyone that would like to start an independent network the tools to do so
+* Do not rely on any public internet resources (other than IP routing)
+* Via bootstraping, let any client join any network without relying on public DNS
+* Allow peer (server) nodes to be run on any platform supported by Mono
 
-## Future Goals
+## Secondary Goals
 * Create a reputation system for users
 * Create a standard API for 3rd party apps and command line users to:
   * Get and store data
@@ -19,17 +20,18 @@ A peer-to-peer messaging and data storage network that uses client and server si
   * Get network user info as provided
 * Allow browsers to participate in network using local storage
 * Auto-push updates to all members
+* Ability to use TCP or UDP for data transfers
 
 ## Technology
-CryptLink will use many existing technologies and ideas in new ways, including but not limited to:
+CryptLink will use many existing technologies and ideas in new ways, including:
 
-* TLS Trust Networks with a private root Certificate Authority for servers
-* HTTP(s) requests and sockets for general communication
+* TLS Trust Networks with a private root certificate authority for peer servers authentication and encryption
+* HTTP(s) requests and sockets for general communication, for the most part will look like regular web browsing to an observer
 * DNSSEC for public server name resolution and bootstrapping
-* GPG/PGP for end-to-end message/data encryption and signing
-* DHT (Distributed Hash Table) for resolving the host for message, data and user data
+* Client side x509 certs for end-to-end encryption and signing
+* DHT (Distributed Hash Table) for storing and retrieving arbitrary objects
 * Block chain for user reputation
-* unit testing for all major features that are runnable on all platforms (nunit 2.6.4) in monodevelop or visual studio
+* Unit testing (via nunit) for all major features
 
 ## Licenses
 See [Licenses.md](Licenses.md)

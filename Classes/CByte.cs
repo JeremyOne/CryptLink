@@ -11,7 +11,7 @@ namespace CryptLink {
     /// </summary>
     public abstract class CByte : IComparable {
         
-        public abstract byte[] Bytes { get; } 
+        public abstract byte[] Bytes { get; }
 
         /// <summary>
         /// Returns a basic B64 representation of the hash

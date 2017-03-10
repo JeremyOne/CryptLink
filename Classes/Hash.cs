@@ -12,13 +12,18 @@ namespace CryptLink
     public class Hash : CByte {
         public HashProvider Provider { get; private set; }
 
-        private readonly byte[] _bytes;
+        private readonly byte[] bytes;
 
         public override byte[] Bytes {
             get {
-                return _bytes;
+                return bytes;
             }
         }
+
+        /// <summary>
+        /// The number of bytes hashed to get this result
+        /// </summary>
+        public int SourceByteLength { get; private set; }
 
         static HashAlgorithm[] hashAlgorithms = new HashAlgorithm[Enum.GetNames(typeof(HashProvider)).Length];
 
@@ -29,11 +34,12 @@ namespace CryptLink
         /// </summary>
         /// <param name="HashedBytes">The bytes to copy into this hash</param>
         /// <param name="_Provider"></param>
-        private Hash(byte[] HashedBytes, HashProvider _Provider) {
+        private Hash(byte[] HashedBytes, HashProvider _Provider, int _SourceByteLength) {
 
             if (HashedBytes.Length == GetProviderByteLength(_Provider)) {
-                _bytes = HashedBytes;
+                bytes = HashedBytes;
                 Provider = _Provider;
+                SourceByteLength = _SourceByteLength + GetProviderByteLength(_Provider);
             } else {
                 throw new ArgumentException("The provided bytes are not the expected length, should be: "
                     + GetProviderByteLength(_Provider) +
@@ -44,9 +50,9 @@ namespace CryptLink
         /// <summary>
         /// Copies the bytes from a b64 string to a new Hash (does not compute a hash)
         /// </summary>
-        public static Hash FromB64(string Base64String, HashProvider _Provider) {
+        public static Hash FromB64(string Base64String, HashProvider _Provider, int SourceBytesLength) {
             var bytes = Base64.DecodeBytes(Base64String);
-            return FromComputedBytes(bytes, _Provider);
+            return FromComputedBytes(bytes, _Provider, SourceBytesLength);
         }
 
         /// <summary>
@@ -55,9 +61,9 @@ namespace CryptLink
         /// <param name="PreComputedHashBytes"></param>
         /// <param name="_Provider"></param>
         /// <returns></returns>
-        public static Hash FromComputedBytes(byte[] PreComputedHashBytes, HashProvider _Provider) {
+        public static Hash FromComputedBytes(byte[] PreComputedHashBytes, HashProvider _Provider, int SourceBytesLength) {
             if (PreComputedHashBytes.Length == GetProviderByteLength(_Provider)) {
-                return new Hash(PreComputedHashBytes, _Provider);
+                return new Hash(PreComputedHashBytes, _Provider, SourceBytesLength);
             } else {
                 throw new ArgumentException("Provided bytes were not the expected length for this hash type");
             }
@@ -110,9 +116,9 @@ namespace CryptLink
         /// </summary>
         /// <param name="From">Bytes to compute the hash from</param>
         /// <param name="HashProvider">The crypto provider to compute the hash with</param>
-        public static Hash Compute(byte[] HashFromBytes, HashProvider HashProvider) {
+        public static Hash Compute(byte[] FromBytes, HashProvider HashProvider) {
             HashAlgorithm hashAlgo = GetHashAlgorithm(HashProvider);
-            return new Hash(hashAlgo.ComputeHash(HashFromBytes), HashProvider);
+            return new Hash(hashAlgo.ComputeHash(FromBytes), HashProvider, FromBytes.Length);
         }
 
         /// <summary>

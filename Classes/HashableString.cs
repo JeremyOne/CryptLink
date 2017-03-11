@@ -11,13 +11,22 @@ namespace CryptLink {
     /// </summary>
     public class HashableString : Hashable {
 
+        public HashableString() { }
+
+        public override bool HashIsImmutable {
+            get {
+                return true;
+            }
+        }
 
         public HashableString(string _Value) {
             Value = _Value;
         }
 
+        public override Hash.HashProvider Provider { get; set; }
+
         /// <summary>
-        /// Create a new hashable string 
+        /// Create a new Hashable string 
         /// </summary>
         /// <param name="_Value">The string to hash</param>
         /// <param name="Noramilize">If true, trims whitespace and set to lowercase invariant</param>

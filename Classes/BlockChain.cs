@@ -2,7 +2,16 @@
 using System.Collections.Generic;
 
 namespace CryptLink {
-	public class BlockChain<T> where T : Hashable {
+
+    /// <summary>
+    /// A block chain collection
+    /// </summary>
+    /// <typeparam name="V"></typeparam>
+	public class BlockChain<V> 
+        where V : Hashable{
+
+		private Dictionary<byte[], BlockItem<V>> PendingItems = new Dictionary<byte[], BlockItem<V>>();
+		private Dictionary<byte[], BlockItem<V>> CachedItems = new Dictionary<byte[], BlockItem<V>>();
 
         /// <summary>
         /// The owner of this chain, if specified, all blocks must be signed by the owner
@@ -12,41 +21,27 @@ namespace CryptLink {
 		/// <summary>
 		/// If true, only the owner can add items to the chain
 		/// </summary>
-		public bool OwnerRestricted {
-            get {
-                return Owner != (Hash)null;
-            }
-        }
-
-        /// <summary>
-        /// If true, this object will keep a live index of all current items
-        /// </summary>
-        public bool LiveIndex { get; set; }
-
-        /// <summary>
-        /// If true, all names will be converted to lowercase before storage
-        /// </summary>
-        public bool CaseInsensitive { get; set; }
+		public bool OwnerRestricted { get; set; }
 
 		/// <summary>
 		/// Maximum number of items in a given block
 		/// </summary>
-		public long MaxBlockLength { get; set; }
+		public long BlockItemMaxLength { get; set; }
 
         /// <summary>
         /// Maximum number of items in the entire chain
         /// </summary>
-        public long MaxChainLength { get; set; }
+        public long ChainMaxLength { get; set; }
 
         /// <summary>
         /// The maximum age of blocks in this chain, if a block expires, it will be removed with it's items
         /// </summary>
-        public TimeSpan MaxChainAge { get; set; }
+        public TimeSpan ChainMaxAge { get; set; }
 
 		/// <summary>
 		/// Amount of time to wait for new items to be added before generating a new block
 		/// </summary>
-		public TimeSpan MinBlockSpan { get; set; } 
+		public TimeSpan BlockMinSpan { get; set; } 
 
         /// <summary>
         /// The time of the last block generation
@@ -58,38 +53,78 @@ namespace CryptLink {
         /// </summary>
 		private DateTime LastBlockItemAdded { get; set; }
 
-        /// <summary>
-        /// Stores and item in the chain
-        /// </summary>
-        /// <returns>True if the store was added</returns>
-		public bool StoreItem(string Name, BlockItem<T> Item) {
-			throw new NotImplementedException();
-		}
+		/// <summary>
+		/// Nodes that are known to accept blocks from this chain
+		/// </summary>
+		/// <value>The peer nodes.</value>
+		private List<Hash> PeerNodes { get; set; }
 
         /// <summary>
         /// Stores and item in the chain
         /// </summary>
+        /// <param name="Item">The item to add to the chain</param>
         /// <returns>True if the store was added</returns>
-		public bool StoreItem(string Name, T Value, Hash Owner) {
-            var bi = new BlockItem<T>() {
+		public bool StoreItem(BlockItem<V> Item) {
+            Item.Status = BlockItemStatus.Pending;
+            Item.Age = DateTime.Now;
+
+            //check if the owner signed the item
+            if (OwnerRestricted) {
+                throw new NotImplementedException();
+            }
+
+            byte[] key;
+            if (Item.Name != null) {
+                key = Item.Name.Hash.Bytes;
+            } else {
+                key = Item.Hash.Bytes;
+            }
+
+            var existingItem = GetItem(key);
+            if (existingItem != null) {
+                throw new NotImplementedException();
+            }
+
+            PendingItems.Add(key, Item);
+            return true;
+        }
+
+        /// <summary>
+        /// Stores or updates an item in the chain
+        /// </summary>
+		/// <param name="Name">The lookup name of the item</param>
+		/// <param name="Value">The item to store</param>
+		/// <param name="Owner">If set, only members with the same private key can update the item</param>
+        /// <returns>True if the store was added</returns>
+		public bool StoreItem(string Name, V Value, Hash Owner) {
+            var item = new BlockItem<V>() {
                 Age = DateTime.Now,
-                Name = Name,
+                Name = new HashableString(Name),
                 Status = BlockItemStatus.Pending,
                 Value = Value,
                 Owner = Owner
             };
 
+            //StoreItem(Name, item);
             throw new NotImplementedException();
         }
 
-        public BlockItem<T> GetItem(string Name){
-			//how should searching be done? By name?
-			//bigger question, should this just be a dictionary/KVP?
+		/// <summary>
+		/// Gets an item from the chain, if it exists
+		/// </summary>
+		/// <returns>The item, or null.</returns>
+		/// <param name="Name">Name of the item</param>
+		public BlockItem<V> GetItem(byte[] Key){
+
+			//need to search blocks
 			throw new NotImplementedException();
 		}
 
-		public BlockItemStatus GetItemStatus(string Name) {
-            BlockItem<T> i = GetItem(Name);
+        /// <summary>
+        /// Get the BlockItemStatus of a given key
+        /// </summary>
+		public BlockItemStatus GetItemStatus(byte[] Key) {
+            BlockItem<V> i = GetItem(Key);
 
 			if(i != null) {
 				return i.Status;
@@ -103,7 +138,7 @@ namespace CryptLink {
         /// </summary>
         /// <param name="NewBlock"></param>
         /// <returns></returns>
-		public bool ProcessBlock(Block<T> NewBlock) {
+		public bool ProcessBlock(Block<V> NewBlock) {
 			throw new NotImplementedException();
 		}
 
@@ -122,9 +157,6 @@ namespace CryptLink {
 		public void LoadChain(string LocalPath) {
 			throw new NotImplementedException();
 		}
-
-		private Dictionary<string, BlockItem<T>> itemStack = new Dictionary<string, BlockItem<T>>(); 
-
         
     }
 }

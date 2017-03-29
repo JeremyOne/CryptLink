@@ -23,23 +23,51 @@ namespace CryptLink {
         public TimeSpan MinExpiration { get; set; }
         public long MinObjectSize { get; set; }
 
-        public long CurrentCollectionCount { get; set; }
+        public abstract long CurrentCollectionCount { get; }
         public long CurrentCollectionSize { get; set; }
         public long CurrentWriteCount { get; set; }
         public long CurrentReadCount { get; set; }
 
+        /// <summary>
+        /// The timespan interval to manage the collection at, set to 0 to disable
+        /// </summary>
         public TimeSpan ManageEvery { get; set; }
+
+        /// <summary>
+        /// The write count interval to manage the collection at, set to 0 to disable
+        /// </summary>
         public int ManageEveryIOCount { get; set; }
+
+        /// <summary>
+        /// The IO count when the collection was last managed
+        /// </summary>    
         public long ManagedAtIOCount { get; set; }
+
+        /// <summary>
+        /// The time when the collection was last managed
+        /// </summary>
         public DateTime ManagedLastAt { get; set; }
+
+        /// <summary>
+        /// True if management is running, false if not
+        /// </summary>
         public bool ManagementRunning { get; set; }
 
+        /// <summary>
+        /// When the collection was initialized
+        /// </summary>
         public DateTime StartedTime { get; } = DateTime.Now;
 
+        /// <summary>
+        /// A rating of the preference of this cache
+        /// </summary>
         public double CachePreference { get; set; }
 
+        /// <summary>
+        /// The cache to overflow items to if this cache becomes full
+        /// </summary>
         public IObjectCache OverflowCache { get; set; }
-
+        
         public abstract bool AddOrUpdate<T>(CByte Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
         public abstract bool AddOrUpdate(CacheItem Value);
         public abstract bool Exists(CByte Key);
@@ -55,6 +83,10 @@ namespace CryptLink {
         /// Checks if management is needed, and runs it if needed
         /// </summary>
         public void ManageCheck() {
+            //if (CurrentWriteCount % ManageEveryIOCount != 0) {
+            //    return;
+            //}
+
             bool managementNeeded = false;
 
             if (ManageEvery.TotalSeconds > 0) {
@@ -78,6 +110,9 @@ namespace CryptLink {
             }
         }
 
+        /// <summary>
+        /// Run cache management now with no other checks
+        /// </summary>
         public void ManageNow() {
             if (ManagementRunning) {
                 return;
@@ -108,10 +143,9 @@ namespace CryptLink {
         /// </summary>
         public abstract CByte[] GetMigrationCanidates(int Count);
 
-        public void CountRead() {
-            CurrentReadCount += 1;
-        }
-
+        /// <summary>
+        /// Increments the write counter, and checks if management is needed
+        /// </summary>
         public void CountWrite() {
             CurrentWriteCount += 1;
             ManageCheck();
@@ -129,12 +163,18 @@ namespace CryptLink {
             }
         }
 
+        /// <summary>
+        /// The percentage of the cache used based on item count
+        /// </summary>
         public double UseageCountPercent {
             get {
                 return ((double)CurrentCollectionCount / (double)MaxCollectionCount);
             }
         }
 
+        /// <summary>
+        /// The percentage of the cache used based on size (in bytes) of the cache
+        /// </summary>
         public double UseageSizePercent {
             get {
                 return ((double)CurrentCollectionSize / (double)MaxCollectionSize);

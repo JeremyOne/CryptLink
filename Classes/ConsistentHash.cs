@@ -25,7 +25,7 @@ namespace CryptLink
         SortedDictionary<Hash, T> circle = new SortedDictionary<Hash, T>();
         SortedDictionary<Hash, T> unreplicatedNodes = new SortedDictionary<Hash, T>();
         Dictionary<Hash, int> replicationWeights = new Dictionary<Hash, int>();
-        Hash.HashProvider Provider = Hash.HashProvider.SHA256;
+        Hash.HashProvider Provider;
 
         Hash[] ayKeys = null;    //cache the ordered keys for better performance
 
@@ -51,7 +51,7 @@ namespace CryptLink
         /// distribution of peers in the address space, the higher the weight the more likely the node will be found while searching</param>
         /// <returns>The first hash of the node (If ReplicationWeight is more than 1, there is more than one hash of the item in the table)</returns>
         public Hash Add(T node, bool updateKeyArray, int ReplicationWeight) {
-            var nodeHash = node.GetHash(Provider);
+            var nodeHash = node.Hash;
             Add(node, nodeHash, updateKeyArray, ReplicationWeight);
             return nodeHash;
         }
@@ -144,7 +144,7 @@ namespace CryptLink
         }
 
         public T GetNode(byte[] key) {
-            Hash h = Hash.FromComputedBytes(key, Provider);
+            Hash h = Hash.FromComputedBytes(key, Provider, 0);
             int first = First_ge(h);
             return circle[ayKeys[first]];
         }

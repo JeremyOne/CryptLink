@@ -229,6 +229,7 @@ namespace CryptLink {
             
         }
 
+        
         /// <summary>
         /// Signs any Hashable item
         /// </summary>
@@ -261,6 +262,26 @@ namespace CryptLink {
             return csp.VerifyHash(hash, providerOID, signature);
         }
 
-        
+
+        /// <summary>
+        /// Calculates a score on the scale of 0.0 - 1.0 based on 
+        /// </summary>
+        /// <param name="InputValue"></param>
+        /// <param name="Max"></param>
+        /// <param name="Invert">Makes the scale 1 to 0 instead of 0 to 1</param>
+        /// <returns></returns>
+        public static double GetRange(double InputValue, double ValueMax) {
+            return Math.Min(InputValue, ValueMax) / ValueMax;
+        }
+
+        /// <summary>
+        /// Gets a temporary file name appropriate for this project
+        /// </summary>
+        /// <param name="FileExtention"></param>
+        /// <returns></returns>
+        public static string GetTempFilePath(string FileExtention) {
+            return $"temp-{DateTime.Now.Ticks.ToString()}.{FileExtention}";
+        }
+
     }
 }

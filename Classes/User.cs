@@ -14,6 +14,13 @@ namespace CryptLink {
         public byte[] PublicKey { get; set; }
         public string Name { get; set; }
         public DateTime LastActivity { get; set; }
+        public override Hash.HashProvider Provider { get; set; }
+
+        public override bool HashIsImmutable {
+            get {
+                return true;
+            }
+        }
 
         public override byte[] HashableData() {
             return PublicKey;

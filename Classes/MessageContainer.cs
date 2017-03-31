@@ -6,19 +6,25 @@ using System.Threading.Tasks;
 
 namespace CryptLink {
     public class MessageContainer : Hashable {
-        public Hash SenderHash { get; set; }
-        public Hash ReceiverHash { get; set; }
-        public Hash.HashProvider Provider { get; set; }
-        public bool Encrypted { get; set; }
-        public byte[] Payload { get; set; }
+        public Hash SenderHash { get; private set; }
+        public Hash ReceiverHash { get; private set; }
+        public override Hash.HashProvider Provider { get; set; }
+        public bool Encrypted { get; private set; }
+        public byte[] Payload { get; private set; }
 
         static int intLength = sizeof(int);
 
-        public MessageContainer(Hash Sender, Hash Receiver, Hash.HashProvider HashProvider) {
+        public override bool HashIsImmutable {
+            get {
+                return true;
+            }
+        }
+
+        public MessageContainer(Hash Sender, Hash Receiver, Hash.HashProvider HashProvider, byte[] MessagePayload) {
             SenderHash = Sender;
             ReceiverHash = Receiver;
             Provider = HashProvider;
-            Payload = new byte[0];
+            Payload = MessagePayload;
         }
 
         public override byte[] HashableData() {
@@ -32,7 +38,7 @@ namespace CryptLink {
 
         public byte[] ToBinary() {
             return HashableData()
-                .Concat(GetHash(Provider).Bytes)
+                .Concat(Hash.Bytes)
                 .ToArray();
         }
 
@@ -58,7 +64,7 @@ namespace CryptLink {
             return "Sender: '" + SenderHash.ToString() + 
                 "', Receiver: '" + ReceiverHash.ToString() +
                 "', Payload length: " + Payload.Length.ToString() +
-                "', Hash: '" + GetHash(Provider).ToString();
+                "', Hash: '" + Hash.ToString();
         }
 
         public static MessageContainer FromBinary(byte[] Blob, bool EnforceHashCheck) {
@@ -92,30 +98,31 @@ namespace CryptLink {
             byte[] sender = new byte[hashLength];
             byte[] receiver = new byte[hashLength];
             byte[] hash = new byte[hashLength];
-
+            
+            //parse out the hashes
             Array.Copy(Blob, intLength + 1, sender, 0, hashLength);
             Array.Copy(Blob, intLength + hashLength + 1, receiver, 0, hashLength);
             Array.Copy(Blob, Blob.Length - hashLength, hash, 0, hashLength);
-
-            //parse out the hashes
-            MessageContainer container = new MessageContainer(
-                Hash.FromComputedBytes(sender, provider),
-                Hash.FromComputedBytes(receiver, provider),
-                provider
-            );
-            
+           
             //get the payload
             int payloadStart = intLength + (hashLength * 2) + 1;
             int payloadLength = Blob.Length - (payloadStart + hashLength);
-
+            byte[] payload = new byte[payloadLength];
+            
             if (payloadLength > 0) {
-                container.Payload = new byte[payloadLength];
-                Array.Copy(Blob, payloadStart, container.Payload, 0, payloadLength);
+                Array.Copy(Blob, payloadStart, payload, 0, payloadLength);
             }
 
+            MessageContainer container = new MessageContainer(
+                Hash.FromComputedBytes(sender, provider, 0),
+                Hash.FromComputedBytes(receiver, provider, 0),
+                provider,
+                payload
+            );
+
             //verify hash
-            var newHash = container.GetHash(container.Provider);
-            var oldHash = Hash.FromComputedBytes(hash, provider);
+            var newHash = container.Hash;
+            var oldHash = Hash.FromComputedBytes(hash, provider, Blob.Length);
 
             if (newHash == oldHash || EnforceHashCheck == false) {
                 return container;

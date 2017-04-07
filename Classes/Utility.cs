@@ -229,7 +229,13 @@ namespace CryptLink {
             
         }
 
-        
+        /// <summary>
+        /// Re-parses an X509Certificate2 to only contain the public key
+        /// </summary>
+        public static X509Certificate2 GetPublicKey(X509Certificate2 FromCert) {
+            return new X509Certificate2(FromCert.RawData);
+        }
+
         /// <summary>
         /// Signs any Hashable item
         /// </summary>

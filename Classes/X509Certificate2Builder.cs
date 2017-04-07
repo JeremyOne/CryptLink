@@ -23,14 +23,11 @@ namespace CryptLink
     {
         //based on comments from: https://stackoverflow.com/questions/22230745/generate-self-signed-certificate-on-the-fly
 
-        public string SubjectName
-        { set { _subjectName = value; } }
+        public string SubjectName { set { _subjectName = value; } }
 
-        public string IssuerName
-        { set { _issuerName = value; } }
+        public string IssuerName { set { _issuerName = value; } }
 
-        public AsymmetricAlgorithm IssuerPrivateKey
-        { set { _issuerPrivateKey = value; } }
+        public AsymmetricAlgorithm IssuerPrivateKey { set { _issuerPrivateKey = value; } }
 
         public X509Certificate2 Issuer
         {
@@ -43,17 +40,13 @@ namespace CryptLink
             }
         }
 
-        public int? KeyStrength
-        { set { _keyStrength = value ?? 4096; } }
+        public int? KeyStrength { set { _keyStrength = value ?? 4096; } }
 
-        public DateTime? NotBefore
-        { set { _notBefore = value; } }
+        public DateTime? NotBefore { set { _notBefore = value; } }
 
-        public DateTime? NotAfter
-        { set { _notAfter = value; } }
+        public DateTime? NotAfter { set { _notAfter = value; } }
 
-        public bool Intermediate
-        { set { _intermediate = value; } }
+        public bool Intermediate { set { _intermediate = value; } }
 
         private string _subjectName;
         private X509Certificate2 _issuer;
@@ -64,8 +57,7 @@ namespace CryptLink
         private DateTime? _notAfter;
         private bool _intermediate = true;
 
-        public X509Certificate2 Build()
-        {
+        public X509Certificate2 Build() {
             // Generating Random Numbers
             var randomGenerator = new CryptoApiRandomGenerator();
             var random = new SecureRandom(randomGenerator);
@@ -113,14 +105,13 @@ namespace CryptLink
             var certificate = certificateGenerator.Generate(issuerKeyPair.Private, random);
 
             // merge into X509Certificate2
-            return new X509Certificate2(certificate.GetEncoded())
-            {
+            return new X509Certificate2(certificate.GetEncoded()) {
                 PrivateKey = ConvertToRsaPrivateKey(subjectKeyPair)
             };
         }
 
-        private static AsymmetricAlgorithm ConvertToRsaPrivateKey(AsymmetricCipherKeyPair keyPair)
-        {
+        private static AsymmetricAlgorithm ConvertToRsaPrivateKey(AsymmetricCipherKeyPair keyPair) {
+
             var keyInfo = PrivateKeyInfoFactory.CreatePrivateKeyInfo(keyPair.Private);
             var seq = (Asn1Sequence) Asn1Object.FromByteArray(keyInfo.PrivateKey.GetDerEncoded());
             if (seq.Count != 9) {
@@ -134,7 +125,8 @@ namespace CryptLink
 
             return DotNetUtilities.ToRSA(rsaparams);
         }
-        
+
+
     }
 
 }

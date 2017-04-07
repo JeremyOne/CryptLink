@@ -6,28 +6,31 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.Net.WebSockets;
 using System.Threading;
+using ServiceStack;
 using NLog;
+using System.Reflection;
 
 namespace CryptLink {
 
     /// <summary>
     /// A server that runs locally, processes requests, caches data
     /// </summary>
-    public class Server : IDisposable {
-        public Hash.HashProvider Provider { get; private set; }
-        public X509Certificate2 ServerCert { get; private set; }
-        public IObjectCache ObjectCache { get; private set; }
-        public long SocketMessageCount { get; private set; }
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-
-        public bool LogToConsole { get; set; } = true;
+    public class Server : IServer {
+        public Hash.HashProvider Provider { get; set; }
+        public X509Certificate2 ServerCert { get; set; }
+        public IObjectCache ObjectCache { get; set; }
+		public string ServiceAddress { get; set; }
+        public long MessageCount { get; set; }
+	    public Logger logger { get; set; } = LogManager.GetCurrentClassLogger();
+        public Peer ThisPeerInfo { get; set; }
+        
+		public ServiceStackHost ServiceHost { get; set; }
 
         /// <summary>
         /// All known servers
         /// </summary>
-        private ConsistentHash<Peer> KnownPeers;
+		public ConsistentHash<Peer> KnownPeers { get; set; }
 
         /// <summary>
         /// Objects for all chains this server is participating in
@@ -36,87 +39,53 @@ namespace CryptLink {
 
         //private Dictionary<Hash, User> KnownUsers = new Dictionary<Hash, User>();
 
-        public Server(Hash.HashProvider _Provider, X509Certificate2 _ServerCert, IObjectCache _ObjectCache, string SocketUrl) {
+        public Server(Hash.HashProvider _Provider, X509Certificate2 _ServerCert, IObjectCache _ObjectCache, string _ServiceAddress) {
 
-        //    logger.Info(this.ToString(), "Starting...");
+            Provider = _Provider;
+            ServerCert = _ServerCert;
+            ObjectCache = _ObjectCache;
+			ServiceAddress = _ServiceAddress;
 
-        //    Provider = _Provider;
-        //    ServerCert = _ServerCert;
-        //    ObjectCache = _ObjectCache;
+            KnownPeers = new ConsistentHash<Peer>(Provider);
 
-        //    KnownPeers = new ConsistentHash<Peer>(Provider);
-
-        //    SocketServer = new WebSocketServer(SocketUrl);
-
-        //    if (_ServerCert != null) {
-        //        SocketServer.Certificate = ServerCert;
-        //    }           
-
-        //    SocketServer.RestartAfterListenError = true;
-        //    SocketServer.Start(socket =>
-        //    {
-        //        socket.OnOpen = () => SocketOpen();
-        //        socket.OnClose = () => SocketClose();
-        //        socket.OnMessage = message => SocketMessage(message);
-        //        socket.OnError = error => SocketError(error);
-        //        socket.OnPing = ping => SocketPing(ping);
-        //        socket.OnPong = pong => SocketPong(pong);
-        //        socket.OnBinary = binary => SocketBinary(binary);
-        //        SocketConnection = socket;
-        //    });    
+            if (_ServerCert == null) {
+                throw new ArgumentNullException("ServerCert was null but is required");
+            }
+            
+            ThisPeerInfo = new Peer() {
+                PublicKey = Utility.GetPublicKey(_ServerCert),
+                Version = new AppVersionInfo() {
+                     ApiCompartibilityVersion = new Version(1, 0, 0, 0),
+                     ApiVersion = new Version(1, 0, 0, 0),
+                     Name = Assembly.GetExecutingAssembly().GetName().FullName,
+                     Version = Assembly.GetExecutingAssembly().GetName().Version
+                },
+                Provider = _Provider
+            };
 
         }
 
-        //public WebSocketServer SocketServer;
+		public void StartServices(){
+			
+            ServiceHost = new Services.ServiceAppHost()
+            .Init()
+            .Start(ServiceAddress);
 
+			HostContext.Container.AddSingleton<Server>(c => this);
 
-
-        private void SocketOpen() {
-            logger.Info(this.ToString() + " Socket opened");
-        }
-
-        private void SocketClose() {
-            logger.Info(this.ToString() + " Socket closed");
-        }
-
-        private void SocketError(Exception Ex) {
-            logger.Error(Ex, this.ToString());
-        }
-
-        private void SocketMessage(string Message) {
-            SocketMessageCount++;
-            logger.Info(this.ToString() + " Message: " + Message);
-        }
-
-        private void SocketBinary(byte[] Message) {
-            SocketMessageCount++;
-            logger.Info(this.ToString() + " Binary: " + Base64.EncodeBytes(Message));
-        }
-
-        private void SocketPing(byte[] Ping) {
-            logger.Info(this.ToString() + " Ping: " + Base64.EncodeBytes(Ping));
-        }
-
-        private void SocketPong(byte[] Pong) {
-            logger.Info(this.ToString() + " Pong: " + Base64.EncodeBytes(Pong));
-        }
+            logger.Info("ServiceAppHost Created at {0}, listening on {1}", DateTime.Now, ServiceAddress);
+		}
 
         public void Dispose() {
             logger.Info(this.ToString() + " Shutdown...");
             ObjectCache.Dispose();
-            //SocketServer.Dispose();
+            ServiceHost.Dispose();
 
             foreach (var client in KnownPeers.AllNodes) {
                 client.Dispose();
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="Key"></param>
-        /// <returns></returns>
         public T Get<T>(CByte Key) where T : Hashable {
 
             if (ObjectCache.Exists(Key)) {

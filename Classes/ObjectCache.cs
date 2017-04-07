@@ -143,6 +143,13 @@ namespace CryptLink {
         /// </summary>
         public abstract CByte[] GetMigrationCanidates(int Count);
 
+		/// <summary>
+		/// Increments the READ counter
+		/// </summary>
+		public void CountRead() {
+			CurrentReadCount += 1;
+		}
+
         /// <summary>
         /// Increments the write counter, and checks if management is needed
         /// </summary>

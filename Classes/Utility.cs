@@ -233,7 +233,12 @@ namespace CryptLink {
         /// Re-parses an X509Certificate2 to only contain the public key
         /// </summary>
         public static X509Certificate2 GetPublicKey(X509Certificate2 FromCert) {
-            return new X509Certificate2(FromCert.RawData);
+            if (FromCert == null) {
+                return null;
+            } else {
+                return new X509Certificate2(FromCert.RawData);
+            }
+            
         }
 
         /// <summary>
@@ -270,14 +275,17 @@ namespace CryptLink {
 
 
         /// <summary>
-        /// Calculates a score on the scale of 0.0 - 1.0 based on 
+        /// Calculates the gradient of a range
         /// </summary>
-        /// <param name="InputValue"></param>
-        /// <param name="Max"></param>
-        /// <param name="Invert">Makes the scale 1 to 0 instead of 0 to 1</param>
+        /// <param name="InputValue">The value to scale</param>
+        /// <param name="MinValue">The minimum value in the range</param>
+        /// <param name="MaxValue">The maximum value in the range</param>
         /// <returns></returns>
-        public static double GetRange(double InputValue, double ValueMax) {
-            return Math.Min(InputValue, ValueMax) / ValueMax;
+        public static double GetRange(double MinValue, double InputValue, double MaxValue) {
+            InputValue = InputValue - MinValue;
+            MaxValue = MaxValue - MinValue;
+
+            return Math.Min(InputValue, MaxValue) / MaxValue;
         }
 
         /// <summary>
@@ -286,6 +294,10 @@ namespace CryptLink {
         /// <param name="FileExtention"></param>
         /// <returns></returns>
         public static string GetTempFilePath(string FileExtention) {
+            while (FileExtention.StartsWith(".")) {
+                FileExtention = FileExtention.TrimStart('.');
+            }
+
             return $"temp-{DateTime.Now.Ticks.ToString()}.{FileExtention}";
         }
 

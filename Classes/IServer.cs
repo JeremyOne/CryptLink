@@ -27,7 +27,7 @@ namespace CryptLink {
 
 		void StartServices();
 
-		void Dispose();
+		new void Dispose();
 		T Get<T>(CByte Key) where T : Hashable;
 
 		Peer GetPeer(CByte Key);

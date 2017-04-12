@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace CryptLink {
 
-	/// <summary>
-	/// Peer - A network accessible host
-	/// </summary>
+    /// <summary>
+    /// Peer - A network accessible host
+    /// </summary>
     public class Peer : Hashable, IDisposable {
         public bool PubicallyAccessible { get; set; }
         public DateTime LastSeen { get; set; }
@@ -21,10 +21,11 @@ namespace CryptLink {
         public List<Uri> KnownPublicIPs { get; set; }
         public List<Hash> KnownPeers { get; set; }
         public Hash ServerOperator { get; set; }
-        public X509Certificate2 Key { get; set; }
+        public X509Certificate2 PublicKey { get; set; }
         public TimeSpan ConnectTimeOut { get; set; }
         public int ConnectRetryMax { get; set; }
         public int ConnectRetries { get; private set; }
+        public AppVersionInfo Version { get; set; }
 
         //private static readonly ILog = LogManger.GetLogger(typeof(this));
 
@@ -39,7 +40,7 @@ namespace CryptLink {
         }
 
         public override byte[] HashableData() {
-            return Key.GetPublicKey();
+            return PublicKey.PublicKey.EncodedKeyValue.RawData;
         }
 
         public bool TryConnect() {
@@ -53,38 +54,38 @@ namespace CryptLink {
 
             if (ClientSocket == null) {
                 //no client (yet)
-                var wscli = new ClientWebSocket();
-                var tokSrc = new CancellationTokenSource();
-                var task = wscli.ConnectAsync(LastKnownPublicUri, tokSrc.Token);
+                //var wscli = new ClientWebSocket();
+                //var tokSrc = new CancellationTokenSource();
+                //var task = wscli.ConnectAsync(LastKnownPublicUri, tokSrc.Token);
 
-                task.Wait();
-                task.Dispose();
+                //task.Wait();
+                //task.Dispose();
 
-                Console.WriteLine($"WebSocket to {this.ToString()} {LastKnownPublicUri} OPEN!");
-                Console.WriteLine("SubProtocol: " + wscli.SubProtocol ?? "");
+                //Console.WriteLine($"WebSocket to {this.ToString()} {LastKnownPublicUri} OPEN!");
+                //Console.WriteLine("SubProtocol: " + wscli.SubProtocol ?? "");
 
-                Console.WriteLine(@"Type ""exit<Enter>"" to quit... ");
-                for (var inp = Console.ReadLine(); inp != "exit"; inp = Console.ReadLine()) {
-                    task = wscli.SendAsync(
-                        new ArraySegment<byte>(Encoding.UTF8.GetBytes(inp)),
-                        WebSocketMessageType.Text,
-                        true,
-                        tokSrc.Token
-                    );
+                //Console.WriteLine(@"Type ""exit<Enter>"" to quit... ");
+                //for (var inp = Console.ReadLine(); inp != "exit"; inp = Console.ReadLine()) {
+                //    task = wscli.SendAsync(
+                //        new ArraySegment<byte>(Encoding.UTF8.GetBytes(inp)),
+                //        WebSocketMessageType.Text,
+                //        true,
+                //        tokSrc.Token
+                //    );
 
-                    task.Wait();
-                    task.Dispose();
-                    Console.WriteLine("**** sent msg");
-                }
+                //    task.Wait();
+                //    task.Dispose();
+                //    Console.WriteLine("**** sent msg");
+                //}
 
-                if (wscli.State == WebSocketState.Open) {
-                    task = wscli.CloseAsync(WebSocketCloseStatus.NormalClosure, "", tokSrc.Token);
-                    task.Wait();
-                    task.Dispose();
-                }
+                //if (wscli.State == WebSocketState.Open) {
+                //    task = wscli.CloseAsync(WebSocketCloseStatus.NormalClosure, "", tokSrc.Token);
+                //    task.Wait();
+                //    task.Dispose();
+                //}
 
-                tokSrc.Dispose();
-                Console.WriteLine("WebSocket CLOSED");
+                //tokSrc.Dispose();
+                //Console.WriteLine("WebSocket CLOSED");
 
                 
             }

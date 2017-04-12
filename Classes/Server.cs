@@ -32,12 +32,63 @@ namespace CryptLink {
         /// </summary>
 		public ConsistentHash<Peer> KnownPeers { get; set; }
 
+        public bool AcceptingObjects {
+            get {
+                if (ObjectCache != null) {
+                    return ObjectCache.AcceptingObjects;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        public bool HoldingObjects {
+            get {
+                if (ObjectCache != null) {
+                    return ObjectCache.CurrentCollectionCount > 0;
+                } else {
+                    return false;
+                }
+            }
+        }
+
         /// <summary>
         /// Objects for all chains this server is participating in
         /// </summary>
         //private Dictionary<Hash, BlockChain> ParticipatingChains = new Dictionary<Hash, BlockChain>();
 
         //private Dictionary<Hash, User> KnownUsers = new Dictionary<Hash, User>();
+
+        public Server(){
+			Provider = Hash.HashProvider.SHA256;
+
+			//ServerCert = new X509Certificate2Builder { SubjectName = "CN=Default Cert", KeyStrength = 1024 }.Build();
+			//ObjectCache = new DictionaryCache() {
+			//	AcceptingObjects = true,
+			//	ManageEvery = new TimeSpan(0, 0, 0),
+			//	ManageEveryIOCount = 0,
+			//	MaxCollectionCount = 10000000,
+			//	MaxCollectionSize = 1024 * 1024 * 1024,
+			//	MaxExpiration = new TimeSpan(0, 0, 20),
+			//	MaxObjectSize = 1024 * 1024
+			//};
+
+			KnownPeers = new ConsistentHash<Peer>(Provider);
+
+			ThisPeerInfo = new Peer() {
+				PublicKey = Utility.GetPublicKey(ServerCert),
+				Version = new AppVersionInfo() {
+					ApiCompartibilityVersion = new Version(1, 0, 0, 0),
+					ApiVersion = new Version(1, 0, 0, 0),
+					Name = Assembly.GetExecutingAssembly().GetName().FullName,
+					Version = Assembly.GetExecutingAssembly().GetName().Version
+				},
+				Provider = Hash.HashProvider.SHA256
+			};
+
+			//ServiceAddress = "http://127.0.0.1:12345";
+
+		}
 
         public Server(Hash.HashProvider _Provider, X509Certificate2 _ServerCert, IObjectCache _ObjectCache, string _ServiceAddress) {
 
@@ -57,7 +108,7 @@ namespace CryptLink {
                 Version = new AppVersionInfo() {
                      ApiCompartibilityVersion = new Version(1, 0, 0, 0),
                      ApiVersion = new Version(1, 0, 0, 0),
-                     Name = Assembly.GetExecutingAssembly().GetName().FullName,
+                     Name = Assembly.GetExecutingAssembly().GetName().Name,
                      Version = Assembly.GetExecutingAssembly().GetName().Version
                 },
                 Provider = _Provider
@@ -65,21 +116,25 @@ namespace CryptLink {
 
         }
 
-		public void StartServices(){
-			
-            ServiceHost = new Services.ServiceAppHost()
-            .Init()
-            .Start(ServiceAddress);
+		public void StartServices(){		
+              //          ServiceHost = new Services.ServiceHostBase()
+              //          .Init()
+              //          .Start(ServiceAddress);
 
-			HostContext.Container.AddSingleton<Server>(c => this);
+		            //	HostContext.Container.AddSingleton<Server>(c => this);
 
-            logger.Info("ServiceAppHost Created at {0}, listening on {1}", DateTime.Now, ServiceAddress);
+              //          logger.Info("ServiceAppHost Created at {0}, listening on {1}", DateTime.Now, ServiceAddress);
 		}
 
         public void Dispose() {
             logger.Info(this.ToString() + " Shutdown...");
-            ObjectCache.Dispose();
-            ServiceHost.Dispose();
+            if (ObjectCache != null) {
+                ObjectCache.Dispose();
+            }
+
+            if (ServiceHost != null) {
+                ServiceHost.Dispose();
+            }
 
             foreach (var client in KnownPeers.AllNodes) {
                 client.Dispose();

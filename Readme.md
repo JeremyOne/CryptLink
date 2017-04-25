@@ -22,6 +22,21 @@ A open source network that fosters free speech by providing a reliable and safe 
 * Auto-push updates to all members
 * Ability to use TCP or UDP for data transfers
 
+## Storage types
+There are three basic types of data that can be stored in the network, each with different properties
+
+### Messages
+A small object that is sent to a key through the network mesh
+-Best effort only
+-Receivers must confirm, or message considered unsent
+-No storage assumed, only the recipient can confirm storage
+
+### Items
+A small object stored by hash, likely cached
+
+### Blobs
+Larger objects stored by hash, in slow storage
+
 ## Technology
 CryptLink will use many existing technologies and ideas in new ways, including:
 

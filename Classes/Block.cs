@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace CryptLink {
 	public class Block<T> : Hashable
@@ -12,6 +13,7 @@ namespace CryptLink {
 		public List<T> BlockItems { get; set; }
         public override Hash.HashProvider Provider { get; set; }
 
+		[JsonIgnore]
         public override bool HashIsImmutable {
             get {
                 return false;

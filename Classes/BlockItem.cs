@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace CryptLink {
     public class BlockItem<V> : Hashable
@@ -12,6 +13,7 @@ namespace CryptLink {
         public V Value { get; set; }
         public override Hash.HashProvider Provider { get; set; }
 
+		[JsonIgnore]
         public override bool HashIsImmutable {
             get {
                 return false;

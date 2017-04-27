@@ -9,9 +9,9 @@ namespace CryptLink {
     /// <summary>
     /// A comparable (and sortable) byte[]
     /// </summary>
-    public abstract class CByte : IComparable {
+    public abstract class ComparableBytesAbstract : IComparable {
         
-        public abstract byte[] Bytes { get; }
+        public abstract byte[] Bytes { get; set; }
 
         /// <summary>
         /// Returns a basic B64 representation of the hash
@@ -21,8 +21,11 @@ namespace CryptLink {
             return Convert.ToBase64String(Bytes);
         }
 
-        public static int Compare(CByte Left, CByte Right) {
-            if (ReferenceEquals(Right, null)) {
+        public static int Compare(ComparableBytesAbstract Left, ComparableBytesAbstract Right) {
+
+			if (ReferenceEquals(Right, null) && ReferenceEquals(Left, null)) {
+				return 0;
+			} else if (ReferenceEquals(Right, null)) {
                 return -1;
             } else if (ReferenceEquals(Left, null)) {
                 return 1;
@@ -31,11 +34,11 @@ namespace CryptLink {
             return Compare(Left.Bytes, Right.Bytes);
         }
 
-        public static int Compare(byte[] Left, CByte Right) {
+        public static int Compare(byte[] Left, ComparableBytesAbstract Right) {
             return Compare(Left, Right.Bytes);
         }
 
-        public static int Compare(CByte Left, byte[] Right) {
+        public static int Compare(ComparableBytesAbstract Left, byte[] Right) {
             return Compare(Left.Bytes, Right);
         }
 
@@ -86,7 +89,7 @@ namespace CryptLink {
             return Compare(this, Bytes);
         }
 
-        public int CompareTo(CByte HashObject) {
+        public int CompareTo(ComparableBytesAbstract HashObject) {
             return Compare(this.Bytes, HashObject.Bytes);
         }
 
@@ -102,7 +105,7 @@ namespace CryptLink {
             return 1;
         }
 
-        public static explicit operator byte[] (CByte b) {
+        public static explicit operator byte[] (ComparableBytesAbstract b) {
             return b.Bytes;
         }
 
@@ -126,93 +129,98 @@ namespace CryptLink {
 
         #endregion 
 
-        /// <summary>
-        /// Depreciated and implemented for compatibility only, this hash is expressed as a Int32 (only 4 bytes).
+		/// <summary>
+		/// Deprecated and implemented for compatibility only, returns a truncated version of the bytes (first 4 bytes).
         /// (Needed for OverrideGetHashCodeOnOverridingEquals)
         /// </summary>
-        public override int GetHashCode() {
+		[System.Obsolete("Deprecated and implemented for compatibility only, returns a truncated version of the bytes (first 4).")]
+		public override int GetHashCode() {
             return BitConverter.ToInt32(Bytes, 0);
         }
 
         #region // All common operators needed for boolean operations
 
+        public static implicit operator ComparableBytesAbstract(byte[] instance) {
+            return new ComparableBytes(instance);
+        }
+
         /*  ==  Equals */
-        public static bool operator ==(CByte Left, byte[] Right) {
-            return Compare(Left, Right) == 0;
-        }
+        //public static bool operator ==(CByte Left, byte[] Right) {
+        //    return Compare(Left, Right) == 0;
+        //}
 
-        public static bool operator ==(byte[] Left, CByte Right) {
-            return Compare(Left, Right) == 0;
-        }
+        //public static bool operator ==(byte[] Left, CByte Right) {
+        //    return Compare(Left, Right) == 0;
+        //}
 
-        public static bool operator ==(CByte Left, CByte Right) {
+        public static bool operator ==(ComparableBytesAbstract Left, ComparableBytesAbstract Right) {
             return Compare(Left, Right) == 0;
         }
 
         /*  !=  Not equals */
-        public static bool operator !=(CByte Left, byte[] Right) {
-            return Compare(Left, Right) != 0;
-        }
+        //public static bool operator !=(CByte Left, byte[] Right) {
+        //    return Compare(Left, Right) != 0;
+        //}
 
-        public static bool operator !=(byte[] Left, CByte Right) {
-            return Compare(Left, Right) != 0;
-        }
+        //public static bool operator !=(byte[] Left, CByte Right) {
+        //    return Compare(Left, Right) != 0;
+        //}
 
-        public static bool operator !=(CByte Left, CByte Right) {
+        public static bool operator !=(ComparableBytesAbstract Left, ComparableBytesAbstract Right) {
             return Compare(Left, Right) != 0;
         }
 
         /*  >  More than */
-        public static bool operator >(CByte Left, byte[] Right) {
-            return Compare(Left, Right) > 0;
-        }
+        //public static bool operator >(CByte Left, byte[] Right) {
+        //    return Compare(Left, Right) > 0;
+        //}
 
-        public static bool operator >(byte[] Left, CByte Right) {
-            return Compare(Left, Right) > 0;
-        }
+        //public static bool operator >(byte[] Left, CByte Right) {
+        //    return Compare(Left, Right) > 0;
+        //}
 
-        public static bool operator >(CByte Left, CByte Right) {
+        public static bool operator >(ComparableBytesAbstract Left, ComparableBytesAbstract Right) {
             return Compare(Left, Right) > 0;
         }
 
         /*  <  Less than */
-        public static bool operator <(CByte Left, byte[] Right) {
+        //public static bool operator <(CByte Left, byte[] Right) {
+        //    return Compare(Left, Right) < 0;
+        //}
+
+        public static bool operator <(ComparableBytesAbstract Left, ComparableBytesAbstract Right) {
             return Compare(Left, Right) < 0;
         }
 
-        public static bool operator <(CByte Left, CByte Right) {
-            return Compare(Left, Right) < 0;
-        }
-
-        public static bool operator <(byte[] Left, CByte Right) {
-            return Compare(Left, Right) < 0;
-        }
+        //public static bool operator <(byte[] Left, CByte Right) {
+        //    return Compare(Left, Right) < 0;
+        //}
 
         /*  =>  More than or equals */
-        public static bool operator >=(CByte Left, byte[] Right) {
+        //public static bool operator >=(CByte Left, byte[] Right) {
+        //    return Compare(Left, Right) >= 0;
+        //}
+
+        public static bool operator >=(ComparableBytesAbstract Left, ComparableBytesAbstract Right) {
             return Compare(Left, Right) >= 0;
         }
 
-        public static bool operator >=(CByte Left, CByte Right) {
-            return Compare(Left, Right) >= 0;
-        }
-
-        public static bool operator >=(byte[] Left, CByte Right) {
-            return Compare(Left, Right) >= 0;
-        }
+        //public static bool operator >=(byte[] Left, CByte Right) {
+        //    return Compare(Left, Right) >= 0;
+        //}
 
         /*  <=  Less than or equals */
-        public static bool operator <=(CByte Left, byte[] Right) {
+        //public static bool operator <=(CByte Left, byte[] Right) {
+        //    return Compare(Left, Right) <= 0;
+        //}
+
+        public static bool operator <=(ComparableBytesAbstract Left, ComparableBytesAbstract Right) {
             return Compare(Left, Right) <= 0;
         }
 
-        public static bool operator <=(CByte Left, CByte Right) {
-            return Compare(Left, Right) <= 0;
-        }
-
-        public static bool operator <=(byte[] Left, CByte Right) {
-            return Compare(Left, Right) <= 0;
-        }
+        //public static bool operator <=(byte[] Left, CByte Right) {
+        //    return Compare(Left, Right) <= 0;
+        //}
 
         #endregion
 

@@ -9,21 +9,15 @@ using System.Threading.Tasks;
 
 namespace CryptLink
 {
-    public class Hash : CByte {
-        public HashProvider Provider { get; private set; }
+    public class Hash : ComparableBytesAbstract {
+        public HashProvider Provider { get; set; }
 
-        private readonly byte[] bytes;
-
-        public override byte[] Bytes {
-            get {
-                return bytes;
-            }
-        }
+        public override byte[] Bytes { get; set; }
 
         /// <summary>
         /// The number of bytes hashed to get this result
         /// </summary>
-        public int SourceByteLength { get; private set; }
+        public int SourceByteLength { get; set; }
 
         static HashAlgorithm[] hashAlgorithms = new HashAlgorithm[Enum.GetNames(typeof(HashProvider)).Length];
 
@@ -37,7 +31,7 @@ namespace CryptLink
         private Hash(byte[] HashedBytes, HashProvider _Provider, int _SourceByteLength) {
 
             if (HashedBytes.Length == GetProviderByteLength(_Provider)) {
-                bytes = HashedBytes;
+                Bytes = HashedBytes;
                 Provider = _Provider;
                 SourceByteLength = _SourceByteLength + GetProviderByteLength(_Provider);
             } else {
@@ -74,6 +68,15 @@ namespace CryptLink
         /// </summary>
         public int HashByteLength(bool ZeroIndexed) {
             return GetProviderByteLength(Provider);
+        }
+
+        public bool Valid() {
+            if (this.Bytes != null) {
+                return this.Bytes.Length == GetProviderByteLength(Provider);
+            } else {
+                return false;
+            }
+            
         }
 
         public static int GetProviderByteLength(HashProvider ForProvider) {
@@ -117,6 +120,11 @@ namespace CryptLink
         /// <param name="From">Bytes to compute the hash from</param>
         /// <param name="HashProvider">The crypto provider to compute the hash with</param>
         public static Hash Compute(byte[] FromBytes, HashProvider HashProvider) {
+
+            if (FromBytes == null) {
+                return null;
+            }
+
             HashAlgorithm hashAlgo = GetHashAlgorithm(HashProvider);
             return new Hash(hashAlgo.ComputeHash(FromBytes), HashProvider, FromBytes.Length);
         }

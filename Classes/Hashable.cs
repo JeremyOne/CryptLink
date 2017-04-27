@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +20,7 @@ namespace CryptLink
         public abstract byte[] HashableData();
 
         /// <summary>
-        /// 
+        /// A bool indicating if this object is Immutable, and the hash should only be computed once
         /// </summary>
         /// <returns></returns>
         public abstract bool HashIsImmutable { get; }
@@ -43,13 +44,17 @@ namespace CryptLink
 
         /// <summary>
         /// Get a Hash object for this class with the default provider
-        /// </summary>       
+        /// </summary>
+        [JsonIgnore]
         public Hash Hash {
             get {
                 if (HashIsImmutable) {
                     if (_Hash?.Bytes == null) {
                         _Hash = Hash.Compute(HashableData(), Provider);
-                        _HashBytes = _Hash.Bytes;
+
+                        if (_Hash != (Hash)null) {
+                            _HashBytes = _Hash.Bytes;
+                        }
                     }
 
                     return _Hash;

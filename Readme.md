@@ -1,6 +1,9 @@
 ﻿# CryptLink
 A open source network that fosters free speech by providing a reliable and safe global scale network.
 
+## Status
+CryptLink is not ready to run, and currently the code here may or may not pass tests. As the project progresses expect a more strict releases.
+
 ## Primary Goals
 * Provide a secure and reliable peer-to-peer-to-client messaging and data storage network
 * Employ strong encryption end-to-end for all clients

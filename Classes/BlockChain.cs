@@ -59,6 +59,8 @@ namespace CryptLink {
 		/// <value>The peer nodes.</value>
 		private List<Hash> PeerNodes { get; set; }
 
+        public Hash.HashProvider Provider { get; set; }
+
         /// <summary>
         /// Stores and item in the chain
         /// </summary>
@@ -99,7 +101,7 @@ namespace CryptLink {
 		public bool StoreItem(string Name, V Value, Hash Owner) {
             var item = new BlockItem<V>() {
                 Age = DateTime.Now,
-                Name = new HashableString(Name),
+                Name = new HashableString(Name, Provider),
                 Status = BlockItemStatus.Pending,
                 Value = Value,
                 Owner = Owner

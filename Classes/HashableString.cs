@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,16 +14,19 @@ namespace CryptLink {
 
         public HashableString() { }
 
+        [JsonIgnore]
         public override bool HashIsImmutable {
             get {
                 return true;
             }
         }
 
-        public HashableString(string _Value) {
+        public HashableString(string _Value, Hash.HashProvider _Provider) {
             Value = _Value;
+            Provider = _Provider;
         }
 
+        [JsonIgnore]
         public override Hash.HashProvider Provider { get; set; }
 
         /// <summary>

@@ -20,14 +20,14 @@ namespace CryptLink {
 
         public CacheItem() { }
 
-        public CacheItem(CByte DesiredLookupKey, IHashable CacheValue, TimeSpan ExpireIn) {
+        public CacheItem(ComparableBytesAbstract DesiredLookupKey, IHashable CacheValue, TimeSpan ExpireIn) {
             Key = DesiredLookupKey.Bytes;
             Value = CacheValue;
             ExpireDate = DateTime.Now.Add(ExpireIn);
             AddedDate = DateTime.Now;
         }
 
-        public CByte GetKeyCByte() {
+        public ComparableBytesAbstract GetKeyCByte() {
             return Hash.FromComputedBytes(Key, Value.Hash.Provider, 0);
         }
 
@@ -44,9 +44,9 @@ namespace CryptLink {
             double sizeBuinaryMax = 1048576;
             double hphMax = 1024;
 
-            double totalHitsScore = 1 - Utility.GetRange((MemoryHits + DiskHits) / (DateTime.Now - AddedDate).TotalHours, hphMax); //25% of score
-            double lastHitScore = 1 - Utility.GetRange((DateTime.Now - LastHit).TotalHours, hourMax); //50% of score
-            double sizeScore = Utility.GetRange(Value.Hash.SourceByteLength, sizeBuinaryMax); //25% of score
+            double totalHitsScore = 1 - Utility.GetRange(0, (MemoryHits + DiskHits) / (DateTime.Now - AddedDate).TotalHours, hphMax); //25% of score
+            double lastHitScore = 1 - Utility.GetRange(0, (DateTime.Now - LastHit).TotalHours, hourMax); //50% of score
+            double sizeScore = Utility.GetRange(0, Value.Hash.SourceByteLength, sizeBuinaryMax); //25% of score
 
             return (totalHitsScore * 0.25) + (lastHitScore * 0.5) + (sizeScore * 0.25);
             

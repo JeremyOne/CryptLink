@@ -59,32 +59,30 @@ namespace CryptLink {
 
         //private Dictionary<Hash, User> KnownUsers = new Dictionary<Hash, User>();
 
-        public Server(){
+        /// <summary>
+        /// Creates a new server object with settings from StaticConfig
+        /// </summary>
+        public Server() {
 			Provider = Hash.HashProvider.SHA256;
 
-			//ServerCert = new X509Certificate2Builder { SubjectName = "CN=Default Cert", KeyStrength = 1024 }.Build();
-			//ObjectCache = new DictionaryCache() {
-			//	AcceptingObjects = true,
-			//	ManageEvery = new TimeSpan(0, 0, 0),
-			//	ManageEveryIOCount = 0,
-			//	MaxCollectionCount = 10000000,
-			//	MaxCollectionSize = 1024 * 1024 * 1024,
-			//	MaxExpiration = new TimeSpan(0, 0, 20),
-			//	MaxObjectSize = 1024 * 1024
-			//};
+            //ServerCert = new X509Certificate2Builder { SubjectName = "CN=Default Cert", KeyStrength = 1024 }.Build();
+            ObjectCache = new DictionaryCache() {
+                AcceptingObjects = true,
+                ManageEvery = new TimeSpan(0, 0, 0),
+                ManageEveryIOCount = 0,
+                MaxCollectionCount = 10000000,
+                MaxCollectionSize = 1024 * 1024 * 1024,
+                MaxExpiration = new TimeSpan(0, 0, 20),
+                MaxObjectSize = 1024 * 1024
+            };
 
-			KnownPeers = new ConsistentHash<Peer>(Provider);
+            ObjectCache.Initialize();
 
-			ThisPeerInfo = new Peer() {
-				PublicKey = Utility.GetPublicKey(ServerCert),
-				Version = new AppVersionInfo() {
-					ApiCompartibilityVersion = new Version(1, 0, 0, 0),
-					ApiVersion = new Version(1, 0, 0, 0),
-					Name = Assembly.GetExecutingAssembly().GetName().FullName,
-					Version = Assembly.GetExecutingAssembly().GetName().Version
-				},
-				Provider = Hash.HashProvider.SHA256
-			};
+            KnownPeers = new ConsistentHash<Peer>(Provider);
+
+            var c = CryptLink.ConfigStatic.Config;
+
+            ThisPeerInfo = c.PeerDetail;
 
 			//ServiceAddress = "http://127.0.0.1:12345";
 
@@ -141,7 +139,7 @@ namespace CryptLink {
             }
         }
 
-        public T Get<T>(CByte Key) where T : Hashable {
+        public T Get<T>(ComparableBytesAbstract Key) where T : Hashable {
 
             if (ObjectCache.Exists(Key)) {
                 return ObjectCache.Get<T>(Key);
@@ -150,7 +148,7 @@ namespace CryptLink {
             }
         }
 
-        public Peer GetPeer(CByte Key) {
+        public Peer GetPeer(ComparableBytesAbstract Key) {
             throw new NotImplementedException();
         }
     }

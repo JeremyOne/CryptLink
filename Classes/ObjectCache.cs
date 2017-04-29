@@ -68,14 +68,15 @@ namespace CryptLink {
         /// </summary>
         public IObjectCache OverflowCache { get; set; }
         
-        public abstract bool AddOrUpdate<T>(CByte Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
+        public abstract bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
         public abstract bool AddOrUpdate(CacheItem Value);
-        public abstract bool Exists(CByte Key);
-        public abstract T Get<T>(CByte Key) where T : Hashable;
-        public abstract CacheItem Get(CByte Key);
-        public abstract bool Remove(CByte Key);
+        public abstract bool Exists(ComparableBytesAbstract Key);
+        public abstract T Get<T>(ComparableBytesAbstract Key) where T : Hashable;
+        public abstract CacheItem Get(ComparableBytesAbstract Key);
+        public abstract bool Remove(ComparableBytesAbstract Key);
         public abstract bool Expire(DateTime ExpiredAfter);
 
+        public abstract void Clear();
         public abstract void Dispose();
         public abstract void Initialize();
 
@@ -127,7 +128,7 @@ namespace CryptLink {
                 if (OverflowCache != null) {
                     //move 10% of max
                     int numToMove = (int)(MaxCollectionCount * 0.1);
-                    CByte[] moveObjects = GetMigrationCanidates(numToMove);
+                    ComparableBytesAbstract[] moveObjects = GetMigrationCanidates(numToMove);
                     MigrateObjects(this, OverflowCache, moveObjects, true);
                 } else {
                     //must stop accepting items
@@ -141,7 +142,7 @@ namespace CryptLink {
         /// <summary>
         /// Gets items to migrate to another cache if needed, it's up to the implementation to decide how to choose them
         /// </summary>
-        public abstract CByte[] GetMigrationCanidates(int Count);
+        public abstract ComparableBytesAbstract[] GetMigrationCanidates(int Count);
 
 		/// <summary>
 		/// Increments the READ counter
@@ -222,7 +223,7 @@ namespace CryptLink {
         /// <summary>
         /// Moves objects from one cache to another
         /// </summary>
-        public void MigrateObjects(IObjectCache Source, IObjectCache Destination, CByte[] ObjectsToMove, bool RemoveSourceObject) {
+        public void MigrateObjects(IObjectCache Source, IObjectCache Destination, ComparableBytesAbstract[] ObjectsToMove, bool RemoveSourceObject) {
 
             foreach (Hash key in ObjectsToMove) {
                 var item = Source.Get(key);

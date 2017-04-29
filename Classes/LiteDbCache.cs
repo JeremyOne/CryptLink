@@ -9,6 +9,7 @@ namespace CryptLink {
     public class LiteDbCache : ObjectCache {
         private LiteDB.LiteDatabase DataBase;
         private LiteDB.LiteCollection<CacheItem> LCol;
+        private string CollectionName = "cache";
 
         public override bool CacheIsPersistent {
             get {
@@ -24,12 +25,12 @@ namespace CryptLink {
 
         public override void Initialize() {
             DataBase = new LiteDatabase(ConnectionString);
-            LCol = DataBase.GetCollection<CacheItem>("cache");
+            LCol = DataBase.GetCollection<CacheItem>(CollectionName);
             LCol.EnsureIndex(c => c.Key);
             //CurrentCollectionCount = LCol.Count();
         }
 
-        public override bool AddOrUpdate<T>(CByte Key, T Value, TimeSpan ExpireSpan) {
+        public override bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) {
             CountWrite();
             CacheItem newItem = new CacheItem(Key, Value, ExpireSpan);
             return AddOrUpdate(newItem);
@@ -49,17 +50,17 @@ namespace CryptLink {
             DataBase.Dispose();
         }
 
-        public override bool Exists(CByte Key) {
+        public override bool Exists(ComparableBytesAbstract Key) {
             CountRead();
             return LCol.Exists(x => x.Key == Key.Bytes);
         }
 
-        public override CacheItem Get(CByte Key) {
+        public override CacheItem Get(ComparableBytesAbstract Key) {
             CountRead();
             return LCol.FindOne(x => x.Key == Key.Bytes);
         }
 
-        public override T Get<T>(CByte Key) {
+        public override T Get<T>(ComparableBytesAbstract Key) {
             var item = Get(Key);
             return (T)item.Value;
         }
@@ -70,7 +71,7 @@ namespace CryptLink {
             return true;
         }
 
-        public override bool Remove(CByte Key) {
+        public override bool Remove(ComparableBytesAbstract Key) {
             CountWrite();
             var deletes = LCol.Delete(x => x.Key == Key.Bytes);
 
@@ -82,9 +83,13 @@ namespace CryptLink {
             }
         }
 
-        public override CByte[] GetMigrationCanidates(int Count) {
+        public override ComparableBytesAbstract[] GetMigrationCanidates(int Count) {
             var canidates = LCol.FindAll().Take(Count);
             return canidates.Select(x => x.GetKeyCByte()).ToArray();
+        }
+
+        public override void Clear() {
+            DataBase.DropCollection(CollectionName);
         }
     }
 }

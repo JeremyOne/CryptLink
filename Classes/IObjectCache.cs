@@ -38,13 +38,13 @@ namespace CryptLink {
         /// <summary>
         /// Add or update an item in this cache
         /// </summary>
-        bool AddOrUpdate<T>(CByte Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
+        bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
         bool AddOrUpdate(CacheItem Value);
-        T Get<T>(CByte Key) where T : Hashable;
-        CacheItem Get(CByte Key);
+        T Get<T>(ComparableBytesAbstract Key) where T : Hashable;
+        CacheItem Get(ComparableBytesAbstract Key);
         bool Expire(DateTime ExpiredAfter);
-        bool Exists(CByte Key);
-        bool Remove(CByte Key);
+        bool Exists(ComparableBytesAbstract Key);
+        bool Remove(ComparableBytesAbstract Key);
 
         double ComputeFitScore(CacheItem ForObject);
 
@@ -53,6 +53,7 @@ namespace CryptLink {
         IObjectCache OverflowCache { get; set; }
 
         void Initialize();
+        void Clear();
 
         void ManageCheck();
         void ManageNow();
@@ -61,7 +62,7 @@ namespace CryptLink {
         void CountWrite();
         double TotalAverageIOPS();
 
-        void MigrateObjects(IObjectCache Source, IObjectCache Destination, CByte[] ObjectsToMove, bool RemoveSourceObject);
+        void MigrateObjects(IObjectCache Source, IObjectCache Destination, ComparableBytesAbstract[] ObjectsToMove, bool RemoveSourceObject);
 
     }
 

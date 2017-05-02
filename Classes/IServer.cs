@@ -13,7 +13,7 @@ using System.Reflection;
 
 namespace CryptLink {
 	public interface IServer : IDisposable {
-		Hash.HashProvider Provider { get; set; }
+		Hash.HashProvider Provider { get; }
 		X509Certificate2 ServerCert { get; set; }
 		IObjectCache ObjectCache { get; set; }
 		string ServiceAddress { get; set; }
@@ -25,12 +25,12 @@ namespace CryptLink {
 
 		ConsistentHash<Peer> KnownPeers { get; set; }
 
-		void StartServices();
+		void Init();
 
 		new void Dispose();
-		T Get<T>(CByte Key) where T : Hashable;
+		T Get<T>(ComparableBytesAbstract Key) where T : Hashable;
 
-		Peer GetPeer(CByte Key);
+		Peer GetPeer(ComparableBytesAbstract Key);
 	}
 }
 

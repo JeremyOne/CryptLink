@@ -17,7 +17,16 @@ namespace CryptLink {
     /// A server that runs locally, processes requests, caches data
     /// </summary>
     public class Server : IServer {
-        public Hash.HashProvider Provider { get; set; }
+        public Hash.HashProvider Provider {
+            get {
+                if (ThisPeerInfo != null) {
+                    return ThisPeerInfo.Provider;
+                } else {
+                    throw new NullReferenceException("Peer info is not set.");
+                }
+            }
+        }
+
         public X509Certificate2 ServerCert { get; set; }
         public IObjectCache ObjectCache { get; set; }
 		public string ServiceAddress { get; set; }
@@ -63,7 +72,11 @@ namespace CryptLink {
         /// Creates a new server object with settings from StaticConfig
         /// </summary>
         public Server() {
-			Provider = Hash.HashProvider.SHA256;
+            var c = CryptLink.ConfigStatic.Config;
+            ThisPeerInfo = c.PeerDetail;
+            Provider = c.PeerDetail.Provider;
+            ServerCert = c.ServerPrivateKey;
+            ObjectCache = c.DefaultCache;
 
             //ServerCert = new X509Certificate2Builder { SubjectName = "CN=Default Cert", KeyStrength = 1024 }.Build();
             ObjectCache = new DictionaryCache() {
@@ -80,9 +93,11 @@ namespace CryptLink {
 
             KnownPeers = new ConsistentHash<Peer>(Provider);
 
-            var c = CryptLink.ConfigStatic.Config;
-
-            ThisPeerInfo = c.PeerDetail;
+            //update 
+            foreach (var peer in c.KnownPeers) {
+                KnownPeers.Add(peer, false, peer.Weight);
+            }
+            KnownPeers.UpdateKeyArray();
 
 			//ServiceAddress = "http://127.0.0.1:12345";
 
@@ -114,14 +129,8 @@ namespace CryptLink {
 
         }
 
-		public void StartServices(){		
-              //          ServiceHost = new Services.ServiceHostBase()
-              //          .Init()
-              //          .Start(ServiceAddress);
+		public void Init(){		
 
-		            //	HostContext.Container.AddSingleton<Server>(c => this);
-
-              //          logger.Info("ServiceAppHost Created at {0}, listening on {1}", DateTime.Now, ServiceAddress);
 		}
 
         public void Dispose() {

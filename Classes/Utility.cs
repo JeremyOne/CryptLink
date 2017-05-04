@@ -301,5 +301,24 @@ namespace CryptLink {
             return $"temp-{DateTime.Now.Ticks.ToString()}.{FileExtention}";
         }
 
+        /// <summary>
+        /// Waits for a file to be free, then deletes it
+        /// </summary>
+        /// <returns>True if successful</returns>
+        public static bool WaitDeleteFile(string FilePath, TimeSpan TimeOut) {
+            var End = DateTime.Now.Add(TimeOut);
+
+            while (DateTime.Now < End) {
+                try {
+                    System.IO.File.Delete(FilePath);
+                    return true;
+                } catch (Exception ex) {
+                    System.Threading.Thread.Sleep(100);
+                }
+            }
+
+            return false;
+        }
+
     }
 }

@@ -8,7 +8,7 @@ using System.Collections;
 
 namespace CryptLink {
     public class DictionaryCache : ObjectCache {
-        ConcurrentDictionary<CByte, CacheItem> Cache;
+        ConcurrentDictionary<ComparableBytesAbstract, CacheItem> Cache;
 
         public override bool CacheIsPersistent {
             get {
@@ -17,7 +17,7 @@ namespace CryptLink {
         }
 
         public override void Initialize() {
-            Cache = new ConcurrentDictionary<CByte, CacheItem>();
+            Cache = new ConcurrentDictionary<ComparableBytesAbstract, CacheItem>();
         }
 
         private long _currentCollectionCount;
@@ -28,7 +28,7 @@ namespace CryptLink {
             }
         }
 
-        public override bool AddOrUpdate<T>(CByte Key, T Value, TimeSpan ExpireSpan) {
+        public override bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) {
             CountWrite();
 
             CacheItem newItem = new CacheItem(Key, Value, ExpireSpan);
@@ -71,19 +71,19 @@ namespace CryptLink {
             Cache = null;
         }
 
-        public override bool Exists(CByte Key) {
+        public override bool Exists(ComparableBytesAbstract Key) {
             CountRead();
             return Cache.ContainsKey(Key);
         }
 
-        public override CacheItem Get(CByte Key) {
+        public override CacheItem Get(ComparableBytesAbstract Key) {
             CountRead();
             var item = new CacheItem();
             Cache.TryGetValue(Key, out item);
             return item;
         }
 
-        public override T Get<T>(CByte Key) {
+        public override T Get<T>(ComparableBytesAbstract Key) {
             var item = Get(Key);
             return (T)item.Value;
         }
@@ -99,7 +99,7 @@ namespace CryptLink {
             return true;
         }
 
-        public override bool Remove(CByte Key) {
+        public override bool Remove(ComparableBytesAbstract Key) {
             CountWrite();
             var c = new CacheItem();
             Cache.TryRemove(Key, out c);
@@ -113,10 +113,13 @@ namespace CryptLink {
             }
         }
 
-        public override CByte[] GetMigrationCanidates(int Count) { 
+        public override ComparableBytesAbstract[] GetMigrationCanidates(int Count) { 
             return (from i in Cache orderby i.Value.ItemCacheScore() ascending select i.Value.GetKeyCByte()).Take(Count).ToArray();
         }
 
+        public override void Clear() {
+            Cache.Clear();
+        }
     }
 
 

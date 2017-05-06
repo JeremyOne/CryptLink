@@ -96,11 +96,9 @@ namespace CryptLink.Services {
 
         public override void Configure(Container container) {
             //container.Register<Server>(new Server());
-            var server = new Server() {
-                 Provider = Hash.HashProvider.SHA256
-            };
+            var server = new Server();
 
-            server.StartServices();
+            server.Init();
 
             container.Register(c => server).ReusedWithin(ReuseScope.Container);
 

@@ -73,33 +73,26 @@ namespace CryptLink {
         /// </summary>
         public Server() {
             var c = CryptLink.ConfigStatic.Config;
-            ThisPeerInfo = c.PeerDetail;
+            
+			ThisPeerInfo = c.PeerDetail;
             Provider = c.PeerDetail.Provider;
             ServerCert = c.ServerPrivateKey;
             ObjectCache = c.DefaultCache;
+			ObjectCache.Initialize();
+			ServiceAddress = c.LocalServiceAddress;
 
-            //ServerCert = new X509Certificate2Builder { SubjectName = "CN=Default Cert", KeyStrength = 1024 }.Build();
-            ObjectCache = new DictionaryCache() {
-                AcceptingObjects = true,
-                ManageEvery = new TimeSpan(0, 0, 0),
-                ManageEveryIOCount = 0,
-                MaxCollectionCount = 10000000,
-                MaxCollectionSize = 1024 * 1024 * 1024,
-                MaxExpiration = new TimeSpan(0, 0, 20),
-                MaxObjectSize = 1024 * 1024
-            };
-
-            ObjectCache.Initialize();
 
             KnownPeers = new ConsistentHash<Peer>(Provider);
 
             //update 
-            foreach (var peer in c.KnownPeers) {
-                KnownPeers.Add(peer, false, peer.Weight);
-            }
-            KnownPeers.UpdateKeyArray();
+			if(c.KnownPeers != null){
+				foreach (var peer in c.KnownPeers) {
+					KnownPeers.Add(peer, false, peer.Weight);
+				}
+				KnownPeers.UpdateKeyArray();
+			}
 
-			//ServiceAddress = "http://127.0.0.1:12345";
+
 
 		}
 

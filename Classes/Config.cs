@@ -33,6 +33,7 @@ namespace CryptLink {
         public List<Peer> KnownPeers { get; set; }
 
         public IObjectCache DefaultCache { get; set; }
+		public string LocalServiceAddress { get; set; }
 
         public Config() {
 			logger = LogManager.GetCurrentClassLogger();
@@ -79,6 +80,8 @@ namespace CryptLink {
                 SwarmName = SwarmName,
                 PublicAddress = SwarmPublicUri
             };
+
+			LocalServiceAddress = "http://127.0.0.1:12345";
 
             if (GenerateCerts) {
                 GenerateAllCerts(true);

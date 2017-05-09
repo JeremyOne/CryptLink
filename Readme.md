@@ -4,12 +4,15 @@ A open source network that fosters free speech by providing a reliable and safe 
 ## Status
 CryptLink is not ready to run, and currently the code here may or may not pass tests. As the project progresses expect a more strict releases.
 
+## Roadmap
+For feature breakout and completion, see [Roadmap.md](Roadmap.md)
+
 ## Primary Goals
 * Provide a secure and reliable peer-to-peer-to-client messaging and data storage network
 * Employ strong encryption end-to-end for all clients
 * Employ strong peer to peer (server to server) encryption for all nodes
 * Provide anyone that would like to start an independent network the tools to do so
-* Do not rely on any public internet resources (other than IP routing)
+* Do not rely on any public Internet resources,  (other than IP routing)
 * Via bootstraping, let any client join any network without relying on public DNS
 * Allow peer (server) nodes to be run on any platform supported by Mono
 

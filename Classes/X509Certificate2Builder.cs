@@ -33,10 +33,14 @@ namespace CryptLink
         {
             set
             {
-                _issuer = value;
-                _issuerName = value.IssuerName.Name;
-                if (value.HasPrivateKey)
-                    _issuerPrivateKey = value.PrivateKey;
+                if (value != null) {
+                    _issuer = value;
+                    _issuerName = value.IssuerName.Name;
+
+                    if (value.HasPrivateKey) {
+                        _issuerPrivateKey = value.PrivateKey;
+                    }
+                }
             }
         }
 

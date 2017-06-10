@@ -100,9 +100,10 @@
     <Compile Include="Classes\BlockChainCollection.cs" />
     <Compile Include="Classes\BlockItem.cs" />
     <Compile Include="Classes\CacheItem.cs" />
+    <Compile Include="Classes\CertificateSerializer.cs" />
     <Compile Include="Classes\ComparableBytes.cs" />
     <Compile Include="Classes\ComparableBytesAbstract.cs" />
-    <Compile Include="Classes\ConfigStatic.cs" />
+    <Compile Include="Classes\ServiceConfigFactory.cs" />
     <Compile Include="Classes\ConsistentHash.cs" />
     <Compile Include="Classes\DictionaryCache.cs" />
     <Compile Include="Classes\IBlockChain.cs" />
@@ -131,7 +132,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Classes\IServer.cs" />
-    <Compile Include="Classes\Config.cs" />
+    <Compile Include="Classes\ServiceConfig.cs" />
     <Compile Include="Classes\Swarm.cs" />
   </ItemGroup>
   <ItemGroup>

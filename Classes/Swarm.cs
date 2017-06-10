@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace CryptLink {
@@ -10,9 +10,18 @@ namespace CryptLink {
         public int UserCertMinLength { get; set; }
 
         public string SwarmName { get; set; }
-        public X509Certificate2 SwarmCAPublicKey { get; set; }
-		public List<Peer> RootPeers { get; set; }
-		public Uri PublicAddress { get; set; }
+
+        public Hash.HashProvider Provider { get; set; }
+
+        [JsonConverter(typeof(CertificateSerializer))]
+        public X509Certificate2 PrivateKey { get; set; }
+
+        public int RootPeerWeight { get; set; } = 150;
+        public int KnownPeerWeight { get; set; } = 100;
+
+        public List<Peer> RootPeers { get; set; }
+        public List<Peer> KnownPeers { get; set; }
+        public Uri PublicAddress { get; set; }
 		public JoinAccessibility Accessibility { get; set; }
 
 		public bool PaddingEnforced { get; set; }

@@ -20,9 +20,6 @@ namespace CryptLink {
 		long MessageCount { get; set; }
 		Logger logger { get; set; }
 		Peer ThisPeerInfo { get; set; }
-
-		ServiceStackHost ServiceHost { get; set; }
-
 		ConsistentHash<Peer> KnownPeers { get; set; }
 
 		void Init();

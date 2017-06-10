@@ -56,6 +56,20 @@ namespace CryptLink
             return nodeHash;
         }
 
+        public void AddRange(List<T> nodes, bool updateKeyArray, int ReplicationWeight) {
+            if (nodes == null) {
+                return;
+            }
+
+            foreach (var node in nodes) {
+                Add(node, node.Hash, false, ReplicationWeight);
+            }
+
+            if (updateKeyArray) {
+                UpdateKeyArray();
+            }
+        }
+
         /// <summary>
         /// Adds a node, runs replication
         /// </summary>

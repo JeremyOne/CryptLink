@@ -7,10 +7,6 @@ using Funq;
 using ServiceStack;
 
 namespace CryptLink.Services {
-    //public class VersionResponse {
-    //	public AppVersionInfo Result { get; set; }
-    //}
-	//https://github.com/lderache/ServiceStack-SelfHostDemo/blob/master/SelfHostRazorWebFormAuth/Program.cs
 
     [Route("/version")]
     public class VersionRequest { }
@@ -32,20 +28,20 @@ namespace CryptLink.Services {
     }
 
     public class ServiceHost : ServiceStack.Service {
-        public Server Server { get; set; }
+        public ServiceConfig Config { get; set; }
 
         public object Any(VersionRequest request) {
             CheckServerObject();
 
-            if (Server?.ThisPeerInfo?.Version != null) {
-				return Server.ThisPeerInfo.Version.ToString();
+            if (Config.ServerPeerInfo?.Version != null) {
+				return Config.ServerPeerInfo.Version.ToString();
             } else {
                 throw new NullReferenceException("Server version object is null, can't respond");
             }
         }
 
         public void CheckServerObject() {
-            if (Server == null) {
+            if (Config.Server == null) {
                 throw new NullReferenceException("Server object is null, can't respond");
             }
         }
@@ -53,11 +49,11 @@ namespace CryptLink.Services {
         public object Any(StoreRequest request) {
             CheckServerObject();
 
-            if (Server.AcceptingObjects) {
+            if (Config.Server.AcceptingObjects) {
                 //verify object
                 if (request.SeralizedItem != null) {
-                    var h = new HashableString(request.SeralizedItem, Server.Provider);
-                    Server.ObjectCache.AddOrUpdate(h.Hash, h, request.ExpireAt);
+                    var h = new HashableString(request.SeralizedItem, Config.Swarm.Provider);
+                    Config.Server.ObjectCache.AddOrUpdate(h.Hash, h, request.ExpireAt);
                     return new StoreResponse() {
                         ItemHash = h.Hash,
                         ItemAdded = true
@@ -73,15 +69,15 @@ namespace CryptLink.Services {
         public object Any(GetRequest request) {
             CheckServerObject();
 
-            if (Server.HoldingObjects) {
+            if (Config.Server.HoldingObjects) {
                 if (request.ItemHash == (Hash)null) {
                     throw new ArgumentException("ItemHash must be assigned");
                 } else if (request.ItemHash.Valid() == false) {
                     throw new ArgumentException("ItemHash data is not valid");
-                } else if (request.ItemHash.Provider != Server.Provider) {
-                    throw new ArgumentException("ItemHash must be the provider type: " + Server.Provider.ToString());
+                } else if (request.ItemHash.Provider != Config.Swarm.Provider) {
+                    throw new ArgumentException("ItemHash must be the provider type: " + Config.Swarm.Provider.ToString());
                 } else {
-                    var cacheItem = Server.ObjectCache.Get(request.ItemHash);
+                    var cacheItem = Config.Server.ObjectCache.Get(request.ItemHash);
                     return cacheItem.Value;
                 }
             } else {
@@ -95,12 +91,6 @@ namespace CryptLink.Services {
         public ServiceHostBase() : base("HttpListener Self-Host", typeof(ServiceHost).Assembly) { }
 
         public override void Configure(Container container) {
-            //container.Register<Server>(new Server());
-            var server = new Server();
-
-            server.Init();
-
-            container.Register(c => server).ReusedWithin(ReuseScope.Container);
 
         }
         

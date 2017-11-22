@@ -28,32 +28,36 @@ namespace CryptLink.Services {
     }
 
     public class ServiceHost : ServiceStack.Service {
-        public ServiceConfig Config { get; set; }
+        public ServiceConfig SConfig { get; set; }
+
+        public ServiceHost() { }
 
         public object Any(VersionRequest request) {
             CheckServerObject();
 
-            if (Config.ServerPeerInfo?.Version != null) {
-				return Config.ServerPeerInfo.Version.ToString();
+            if (SConfig?.ServerPeerInfo?.Version != null) {
+				return SConfig.ServerPeerInfo.Version.ApiVersion.ToString();
             } else {
                 throw new NullReferenceException("Server version object is null, can't respond");
             }
         }
 
         public void CheckServerObject() {
-            if (Config.Server == null) {
-                throw new NullReferenceException("Server object is null, can't respond");
+            if (SConfig?.Server == null) {
+                throw new NullReferenceException("ServiceHost.SConfig.Server is null, can't respond");
+            } else if (SConfig?.Server?.ObjectCache == null) {
+                throw new NullReferenceException("ServiceHost.SConfig.Server.ObjectCache is null, can't respond");
             }
         }
 
         public object Any(StoreRequest request) {
             CheckServerObject();
 
-            if (Config.Server.AcceptingObjects) {
+            if (SConfig.Server.AcceptingObjects) {
                 //verify object
                 if (request.SeralizedItem != null) {
-                    var h = new HashableString(request.SeralizedItem, Config.Swarm.Provider);
-                    Config.Server.ObjectCache.AddOrUpdate(h.Hash, h, request.ExpireAt);
+                    var h = new HashableString(request.SeralizedItem, SConfig.Swarm.Provider);
+                    SConfig.Server.ObjectCache.AddOrUpdate(h.Hash, h, request.ExpireAt);
                     return new StoreResponse() {
                         ItemHash = h.Hash,
                         ItemAdded = true
@@ -61,6 +65,7 @@ namespace CryptLink.Services {
                 }
             }
 
+            //didn't add the item
             return new StoreResponse() {
                 ItemAdded = false
             };
@@ -69,15 +74,15 @@ namespace CryptLink.Services {
         public object Any(GetRequest request) {
             CheckServerObject();
 
-            if (Config.Server.HoldingObjects) {
+            if (SConfig.Server.HoldingObjects) {
                 if (request.ItemHash == (Hash)null) {
                     throw new ArgumentException("ItemHash must be assigned");
                 } else if (request.ItemHash.Valid() == false) {
                     throw new ArgumentException("ItemHash data is not valid");
-                } else if (request.ItemHash.Provider != Config.Swarm.Provider) {
-                    throw new ArgumentException("ItemHash must be the provider type: " + Config.Swarm.Provider.ToString());
+                } else if (request.ItemHash.Provider != SConfig.Swarm.Provider) {
+                    throw new ArgumentException("ItemHash must be the provider type: " + SConfig.Swarm.Provider.ToString());
                 } else {
-                    var cacheItem = Config.Server.ObjectCache.Get(request.ItemHash);
+                    var cacheItem = SConfig.Server.ObjectCache.Get(request.ItemHash);
                     return cacheItem.Value;
                 }
             } else {
@@ -90,9 +95,7 @@ namespace CryptLink.Services {
     public class ServiceHostBase : AppSelfHostBase {
         public ServiceHostBase() : base("HttpListener Self-Host", typeof(ServiceHost).Assembly) { }
 
-        public override void Configure(Container container) {
-
-        }
+        public override void Configure(Container container) { }
         
     }
 }

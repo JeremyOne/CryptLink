@@ -189,6 +189,11 @@ namespace CryptLink {
             }
         }
 
+        /// <summary>
+        /// Returns true if the cache is initialized
+        /// </summary>
+        public abstract bool CacheIsInitalized { get; }
+
         public double TotalAverageIOPS() {
             long ioTotal = CurrentReadCount + CurrentWriteCount;
             return ioTotal / (DateTime.Now - StartedTime).TotalSeconds;

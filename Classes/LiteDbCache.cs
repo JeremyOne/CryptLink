@@ -30,6 +30,12 @@ namespace CryptLink {
             //CurrentCollectionCount = LCol.Count();
         }
 
+        public override bool CacheIsInitalized {
+            get {
+                return DataBase == null;
+            }
+        }
+
         public override bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) {
             CountWrite();
             CacheItem newItem = new CacheItem(Key, Value, ExpireSpan);

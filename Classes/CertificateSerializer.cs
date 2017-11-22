@@ -20,7 +20,7 @@ namespace CryptLink {
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
 
-            if (reader?.Value != null && reader.Value.GetType() == typeof(byte[])) {
+            if (reader?.Value != null && reader.Value.GetType() == typeof(string)) {
                 
                 X509Certificate2 cert = new X509Certificate2(
                     Base64.DecodeBytes(

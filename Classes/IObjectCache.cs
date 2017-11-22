@@ -10,6 +10,7 @@ namespace CryptLink {
 
         bool AcceptingObjects { get; set; }
         bool CacheIsPersistent { get; }
+        bool CacheIsInitalized { get; }
         string ConnectionString { get; set; }
 
         long MinCollectionSize { get; set; }

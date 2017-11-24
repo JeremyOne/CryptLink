@@ -133,7 +133,7 @@ namespace CryptLink {
 		/// Deprecated and implemented for compatibility only, returns a truncated version of the bytes (first 4 bytes).
         /// (Needed for OverrideGetHashCodeOnOverridingEquals)
         /// </summary>
-		[System.Obsolete("Deprecated and implemented for compatibility only, returns a truncated version of the bytes (first 4).")]
+		[Obsolete("Deprecated and implemented for compatibility only, returns a truncated version of the hash bytes (first 4).")]
 		public override int GetHashCode() {
             return BitConverter.ToInt32(Bytes, 0);
         }

@@ -13,8 +13,7 @@ namespace CryptLink {
 
         public Hash.HashProvider Provider { get; set; }
 
-        [JsonConverter(typeof(CertificateSerializer))]
-        public X509Certificate2 PrivateKey { get; set; }
+        public CertificateManager CertManager { get; set; }
 
         public int RootPeerWeight { get; set; } = 150;
         public int KnownPeerWeight { get; set; } = 100;

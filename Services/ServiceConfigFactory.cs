@@ -94,7 +94,7 @@ namespace CryptLink {
                     NotAfter = DateTime.Now.AddYears(10)
                 }.Build();
                 
-                config.Swarm.PrivateKey = swarmKey;
+                config.Swarm.CertManager = new CertificateManager(swarmKey);
                 //config.Swarm.PublicKey = Utility.GetPublicKey(swarmKey);
 
                 var serverKey = new X509Certificate2Builder {
@@ -105,7 +105,7 @@ namespace CryptLink {
                     NotAfter = DateTime.Now.AddYears(10)
                 }.Build();
 
-                config.Server.PrivateKey = serverKey;
+                config.Server.CertManager = new CertificateManager(serverKey);
                 config.ServerPeerInfo.PublicKey = Utility.GetPublicKey(serverKey);
 
             }

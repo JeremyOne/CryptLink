@@ -22,7 +22,7 @@ namespace CryptLink {
 
         public Peer ServerPeerInfo { get; set; }
         
-        public static ServiceConfig Load(string _ConfigPath, bool CreateFile) {
+        public static ServiceConfig Load(string _ConfigPath, bool CreateFile, string CertPassword) {
             
             var c = new ServiceConfig();
             c.ConfigPath = _ConfigPath;

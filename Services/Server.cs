@@ -10,8 +10,7 @@ namespace CryptLink {
     /// </summary>
     public class Server {
 
-        [JsonConverter(typeof(CertificateSerializer))]
-        public X509Certificate2 PrivateKey { get; set; }
+        public CertificateManager CertManager { get; set; }
 
         public IObjectCache ObjectCache { get; set; }
 

@@ -37,6 +37,39 @@
     <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
       <HintPath>packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="LiteDB, Version=4.0.0.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
+      <HintPath>..\packages\LiteDB.4.0.0\lib\net40\LiteDB.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.4.5.14\lib\net45\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Client, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Client.4.5.14\lib\net45\ServiceStack.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Common, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Common.4.5.14\lib\net45\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Interfaces.4.5.14\lib\portable-wp80+sl5+net45+win8+wpa81+monotouch+monoandroid+xamarin.ios10\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Logging.NLog, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Logging.NLog.4.5.14\lib\net45\ServiceStack.Logging.NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.OrmLite.4.5.14\lib\net45\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Razor, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Razor.4.5.14\lib\net45\ServiceStack.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.14\lib\net45\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -50,90 +83,49 @@
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
       <HintPath>packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="LiteDB, Version=3.1.0.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27">
-      <HintPath>packages\LiteDB.3.1.0\lib\net35\LiteDB.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
-      <HintPath>packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c">
-      <HintPath>packages\NLog.4.4.4\lib\net45\NLog.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog.LiteDB, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>packages\NLog.LiteDB.1.0.0.2\lib\net452\NLog.LiteDB.dll</HintPath>
-    </Reference>
-    <Reference Include="WebSocket4Net, Version=0.7.0.0, Culture=neutral, PublicKeyToken=eb4e154b696bf72a">
-      <HintPath>packages\SocketIO4Net.Client.0.6.26\lib\net40\WebSocket4Net.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>packages\ServiceStack.Interfaces.4.5.8\lib\portable-wp80+sl5+net45+win8+wpa81+monotouch+monoandroid+xamarin.ios10\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>packages\ServiceStack.Text.4.5.8\lib\net45\ServiceStack.Text.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Common">
-      <HintPath>packages\ServiceStack.Common.4.5.8\lib\net45\ServiceStack.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Client">
-      <HintPath>packages\ServiceStack.Client.4.5.8\lib\net45\ServiceStack.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack">
-      <HintPath>packages\ServiceStack.4.5.8\lib\net45\ServiceStack.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.OrmLite">
-      <HintPath>packages\ServiceStack.OrmLite.4.5.8\lib\net45\ServiceStack.OrmLite.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Razor">
-      <HintPath>packages\ServiceStack.Razor.4.5.8\lib\net45\ServiceStack.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Razor">
-      <HintPath>packages\ServiceStack.Razor.4.5.8\lib\net45\System.Web.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Logging.NLog">
-      <HintPath>packages\ServiceStack.Logging.NLog.4.5.8\lib\net45\ServiceStack.Logging.NLog.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\Base64.cs" />
-    <Compile Include="Classes\Block.cs" />
-    <Compile Include="Classes\BlockChain.cs" />
-    <Compile Include="Classes\BlockChainCollection.cs" />
-    <Compile Include="Classes\BlockItem.cs" />
-    <Compile Include="Classes\CacheItem.cs" />
-    <Compile Include="Classes\CertificateSerializer.cs" />
-    <Compile Include="Classes\ComparableBytes.cs" />
-    <Compile Include="Classes\ComparableBytesAbstract.cs" />
-    <Compile Include="Classes\ServiceConfigFactory.cs" />
-    <Compile Include="Classes\ConsistentHash.cs" />
-    <Compile Include="Classes\DictionaryCache.cs" />
-    <Compile Include="Classes\IBlockChain.cs" />
-    <Compile Include="Classes\IHashable.cs" />
-    <Compile Include="Classes\IObjectCache.cs" />
-    <Compile Include="Classes\LiteDbCache.cs" />
-    <Compile Include="Classes\ObjectCache.cs" />
-    <Compile Include="Classes\ObjectCacheManager.cs" />
-    <Compile Include="Classes\Server.cs" />
-    <Compile Include="Classes\ServiceHost.cs" />
-    <Compile Include="Classes\Utility.cs" />
-    <Compile Include="Classes\Hash.cs" />
-    <Compile Include="Classes\Hashable.cs" />
-    <Compile Include="Classes\HashableString.cs" />
-    <Compile Include="Classes\Message.cs" />
-    <Compile Include="Classes\MessageContainer.cs" />
-    <Compile Include="Classes\User.cs" />
-    <Compile Include="Classes\Peer.cs" />
-    <Compile Include="Classes\X509Certificate2Builder.cs" />
+    <Compile Include="Utility\Base64.cs" />
+    <Compile Include="Blockchain\Block.cs" />
+    <Compile Include="Blockchain\BlockChain.cs" />
+    <Compile Include="Blockchain\BlockChainCollection.cs" />
+    <Compile Include="Blockchain\BlockItem.cs" />
+    <Compile Include="ObjectCache\CacheItem.cs" />
+    <Compile Include="Utility\CertificateManager.cs" />
+    <Compile Include="Utility\CertificateSerializer.cs" />
+    <Compile Include="Hashable\ComparableBytes.cs" />
+    <Compile Include="Hashable\ComparableBytesAbstract.cs" />
+    <Compile Include="Services\ServiceConfigFactory.cs" />
+    <Compile Include="Hashable\ConsistentHash.cs" />
+    <Compile Include="ObjectCache\DictionaryCache.cs" />
+    <Compile Include="Blockchain\IBlockChain.cs" />
+    <Compile Include="Hashable\IHashable.cs" />
+    <Compile Include="ObjectCache\IObjectCache.cs" />
+    <Compile Include="ObjectCache\LiteDbCache.cs" />
+    <Compile Include="ObjectCache\ObjectCache.cs" />
+    <Compile Include="ObjectCache\ObjectCacheManager.cs" />
+    <Compile Include="Services\Server.cs" />
+    <Compile Include="Services\ServiceHost.cs" />
+    <Compile Include="Utility\Utility.cs" />
+    <Compile Include="Hashable\Hash.cs" />
+    <Compile Include="Hashable\Hashable.cs" />
+    <Compile Include="Hashable\HashableString.cs" />
+    <Compile Include="Services\Message.cs" />
+    <Compile Include="Services\MessageContainer.cs" />
+    <Compile Include="Services\User.cs" />
+    <Compile Include="Services\Peer.cs" />
+    <Compile Include="Utility\X509Certificate2Builder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Classes\AppVersionInfo.cs" />
+    <Compile Include="Services\AppVersionInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Classes\IServer.cs" />
-    <Compile Include="Classes\ServiceConfig.cs" />
-    <Compile Include="Classes\Swarm.cs" />
+    <Compile Include="Services\IServer.cs" />
+    <Compile Include="Services\ServiceConfig.cs" />
+    <Compile Include="Services\Swarm.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

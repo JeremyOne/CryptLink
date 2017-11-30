@@ -85,6 +85,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\IPeerTransport.cs" />
     <Compile Include="Utility\Base64.cs" />
     <Compile Include="Blockchain\Block.cs" />
     <Compile Include="Blockchain\BlockChain.cs" />
@@ -123,7 +124,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Services\IServer.cs" />
     <Compile Include="Services\ServiceConfig.cs" />
     <Compile Include="Services\Swarm.cs" />
   </ItemGroup>

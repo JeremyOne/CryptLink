@@ -45,7 +45,7 @@ namespace CryptLink.Services {
         public void CheckServerObject() {
             if (SConfig?.Server == null) {
                 throw new NullReferenceException("ServiceHost.SConfig.Server is null, can't respond");
-            } else if (SConfig?.Server?.ObjectCache == null) {
+            } else if (SConfig?.Server?.StoreCache == null) {
                 throw new NullReferenceException("ServiceHost.SConfig.Server.ObjectCache is null, can't respond");
             }
         }
@@ -57,7 +57,7 @@ namespace CryptLink.Services {
                 //verify object
                 if (request.SeralizedItem != null) {
                     var h = new HashableString(request.SeralizedItem, SConfig.Swarm.Provider);
-                    SConfig.Server.ObjectCache.AddOrUpdate(h.Hash, h, request.ExpireAt);
+                    SConfig.Server.StoreCache.AddOrUpdate(h.Hash, h, request.ExpireAt);
                     return new StoreResponse() {
                         ItemHash = h.Hash,
                         ItemAdded = true
@@ -82,7 +82,7 @@ namespace CryptLink.Services {
                 } else if (request.ItemHash.Provider != SConfig.Swarm.Provider) {
                     throw new ArgumentException("ItemHash must be the provider type: " + SConfig.Swarm.Provider.ToString());
                 } else {
-                    var cacheItem = SConfig.Server.ObjectCache.Get(request.ItemHash);
+                    var cacheItem = SConfig.Server.StoreCache.Get(request.ItemHash);
                     return cacheItem.Value;
                 }
             } else {

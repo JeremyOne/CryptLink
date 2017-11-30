@@ -5,14 +5,16 @@ using NLog;
 
 namespace CryptLink {
 
+
     /// <summary>
-    /// A server that runs locally, processes requests, caches data
+    /// Data and config for the server
     /// </summary>
     public class Server {
 
         public CertificateManager CertManager { get; set; }
 
-        public IObjectCache ObjectCache { get; set; }
+        public IObjectCache StoreCache { get; set; }
+        public IObjectCache SendCache { get; set; }
 
         public string ServiceAddress { get; set; }
         public long MessageCount { get; set; }
@@ -28,8 +30,8 @@ namespace CryptLink {
         /// </summary>
         public bool AcceptingObjects {
             get {
-                if (ObjectCache != null) {
-                    return ObjectCache.AcceptingObjects;
+                if (StoreCache != null) {
+                    return StoreCache.AcceptingObjects;
                 } else {
                     return false;
                 }
@@ -41,8 +43,8 @@ namespace CryptLink {
         /// </summary>
         public bool HoldingObjects {
             get {
-                if (ObjectCache != null) {
-                    return ObjectCache.CurrentCollectionCount > 0;
+                if (StoreCache != null) {
+                    return StoreCache.CurrentCollectionCount > 0;
                 } else {
                     return false;
                 }
@@ -58,41 +60,16 @@ namespace CryptLink {
 
         
         public void Initialize(Hash.HashProvider Provider) {
-            if (ObjectCache != null) {
-                ObjectCache.Initialize();
+            if (StoreCache != null) {
+                StoreCache.Initialize();
             }
 
             KnownPeers = new ConsistentHash<Peer>(Provider);
         }
 
-   //     public Server(Hash.HashProvider _Provider, X509Certificate2 _ServerCert, IObjectCache _ObjectCache, string _ServiceAddress) {
-
-   //         ServerCert = _ServerCert;
-   //         ObjectCache = _ObjectCache;
-			//ServiceAddress = _ServiceAddress;
-
-   //         KnownPeers = new ConsistentHash<Peer>(Provider);
-
-   //         if (_ServerCert == null) {
-   //             throw new ArgumentNullException("ServerCert was null but is required");
-   //         }
-            
-   //         ThisPeerInfo = new Peer() {
-   //             PublicKey = Utility.GetPublicKey(_ServerCert),
-   //             Version = new AppVersionInfo() {
-   //                  ApiCompartibilityVersion = new Version(1, 0, 0, 0),
-   //                  ApiVersion = new Version(1, 0, 0, 0),
-   //                  Name = Assembly.GetExecutingAssembly().GetName().Name,
-   //                  Version = Assembly.GetExecutingAssembly().GetName().Version
-   //             },
-   //             Provider = _Provider
-   //         };
-
-   //     }
-
         public void Dispose() {
-            if (ObjectCache != null) {
-                ObjectCache.Dispose();
+            if (StoreCache != null) {
+                StoreCache.Dispose();
             }
 
             foreach (var client in KnownPeers.AllNodes) {
@@ -102,11 +79,20 @@ namespace CryptLink {
 
         public T Get<T>(ComparableBytesAbstract Key) where T : Hashable {
 
-            if (ObjectCache.Exists(Key)) {
-                return ObjectCache.Get<T>(Key);
+            if (StoreCache.Exists(Key)) {
+                return StoreCache.Get<T>(Key);
             } else {
-                throw new NotImplementedException();
+                //try and get from the closest peer
+                if (KnownPeers.NodeCount > 0) {
+                    var closestPeer = GetPeer(Key);
+
+                    if (closestPeer != null) {
+                        return closestPeer.TryGet<T>(Key);
+                    }
+                }
             }
+
+            return null;
         }
 
         public Peer GetPeer(ComparableBytesAbstract Key) {

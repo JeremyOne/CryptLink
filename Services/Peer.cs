@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Collections.Concurrent;
+using NLog;
 
 namespace CryptLink {
 
@@ -16,48 +18,122 @@ namespace CryptLink {
     /// Peer - A network accessible host
     /// </summary>
     public class Peer : Hashable, IDisposable {
-        public bool PubicallyAccessible { get; set; }
-        public DateTime LastSeen { get; set; }
-        public DateTime FirstSeen { get; set; }
-        public Uri LastKnownPublicUri { get; set; }
-        public List<Uri> KnownPublicUris { get; set; }
-        public List<Hash> KnownPeers { get; set; }
         public Hash ServerOperator { get; set; }
-        public X509Certificate2 PublicKey { get; set; }
-        public TimeSpan ConnectTimeOut { get; set; }
-        public int ConnectRetryMax { get; set; }
-        public int ConnectRetries { get; private set; }
+        public X509Certificate2 Cert { get; set; }
         public AppVersionInfo Version { get; set; }
 		public override Hash.HashProvider Provider { get; set; }
-        public int Weight { get; set; } = 50;
-
         public IServiceClient LocalClient { get; set; }
+        public bool Initilized { get; private set; }
 
-		[JsonIgnore]
+        public List<Hash> KnownPeers { get; set; } = new List<Hash>();
+        public int Weight { get; set; } = 50;
+        public List<IPeerTransport> Transports { get; set; } = new List<IPeerTransport>();
+        public ConcurrentQueue<Hash> SendQueue { get; set; } = new ConcurrentQueue<Hash>();
+        public TimeSpan ConnectTimeOut { get; set; } = new TimeSpan(0, 3, 0);
+
+        /// <summary>
+        /// Max number of threads to send in, a safe number is equal to the number of transports
+        /// </summary>
+        public int MaxSendingThreads { get; set; } = 2;
+
+        IObjectCache sendCache;
+        int sendingThreads = 0;
+
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        [JsonIgnore]
         public override bool HashIsImmutable {
             get {
                 return true;
             }
         }
 
-        public override byte[] HashableData() {
-            if (PublicKey == null) {
-                throw new NullReferenceException("Public key of a peer can not be null");
-            } else {
-                return PublicKey.PublicKey.EncodedKeyValue.RawData;
+        public void Dispose() {
+            foreach (var transport in Transports) {
+                transport.Dispose();
+            }
+        }
+         
+        public T TryGet<T>(ComparableBytesAbstract Key) where T : Hashable {
+            var transport = GetTransport();
+            return transport.TryGet<T>(Key);
+        }
+
+        public void Initilize(IObjectCache SendCache) {
+            if (Initilized) {
+                throw new InvalidOperationException("This peer already initialized");
+            }
+
+            logger.Trace($"Peer '{Cert.Thumbprint}' initialized");
+            sendCache = SendCache;
+        }
+
+        /// <summary>
+        /// Enqueue a item to be sent, if there are threads available, a new sending thread will be started
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="Item"></param>
+        public void EnqueueSend<T>(T Item) where T : Hashable {
+            if (!Initilized) {
+                throw new InvalidOperationException("The peer has not been initialized");
+            }
+
+            sendCache.AddOrUpdate(Item.Hash, Item, ConnectTimeOut);
+            SendQueue.Enqueue(Item.Hash);
+
+            if (MaxSendingThreads < sendingThreads) {
+                Task.Run(() => ProcessSendQueue());
             }
         }
 
-        public bool TryConnect() {
-            throw new NotImplementedException();
+        /// <summary>
+        /// Processes the send queue
+        /// </summary>
+        /// <param name="ObjectCache"></param>
+        public void ProcessSendQueue() {
+            sendingThreads++;
+
+            while (SendQueue.Count > 0) {
+                Hash sendHash;
+                SendQueue.TryDequeue(out sendHash);
+                IPeerTransport transport = GetTransport();
+                CacheItem sendItem = sendCache.Get(sendHash);
+
+                if (sendItem == null) {
+                    logger.Warn("A peer send item expired, it will not be resent");
+                } else {
+                    if (transport.TryPut(sendItem)) {
+                        //successful send, remove cached item
+                        sendCache.Remove(sendItem.Key);
+                    }
+
+                    sendCache.Expire(DateTime.Now - ConnectTimeOut, true);
+                }
+            }
+
+            sendingThreads--;
         }
 
-        public bool Connected() {
-            throw new NotImplementedException();
+        /// <summary>
+        /// Gets the highest weighted available transport for this peer
+        /// </summary>
+        public IPeerTransport GetTransport() {
+            if (Transports == null || Transports.Count == 0) {
+                throw new NullReferenceException("No transports on peer: " + this.Hash.ToString());
+            } else if (Transports.Count == 1) {
+                return Transports.First();
+            } else {
+                return (from t in Transports where t.Ready orderby t.Weight select t).FirstOrDefault();
+            }
         }
 
-        public void Dispose() {
-            throw new NotImplementedException();
+        public override byte[] HashableData() {
+            if (Cert == null) {
+                //possible improvement: get from web request
+                throw new NullReferenceException("Public key of a peer can not be null");
+            } else {
+                return Cert.PublicKey.EncodedKeyValue.RawData;
+            }
         }
 
     }

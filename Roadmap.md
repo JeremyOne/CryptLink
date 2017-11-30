@@ -27,6 +27,8 @@
 
 ## Config
 - [X] Local load/save
+- [X] Password protect keys in config
+- [ ] Allow for key storage in OS protected store
 - [ ] Import/Export for peer joins to swarm
 
 ## Swarm Bootstraping
@@ -42,6 +44,15 @@
 - [ ] Send Message
 - [ ] Retrieve Message
 - [ ] Swarm to blockchain
+
+## Protocols - Implement IPeerTransports
+- [ ] Https Requests - Bi-directional and uni-directional
+- [ ] WebSockets
+- [ ] UDP
+- [ ] DNS / SEC
+- [ ] SMTP
+- [ ] IRC
+- [ ] Transaction log files / sneakernet
 
 ## Blockchain
 - [X] Store objects

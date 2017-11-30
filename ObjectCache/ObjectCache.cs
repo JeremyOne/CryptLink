@@ -68,6 +68,7 @@ namespace CryptLink {
         /// </summary>
         public IObjectCache OverflowCache { get; set; }
         
+
         public abstract bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
         public abstract bool AddOrUpdate(CacheItem Value);
         public abstract bool Exists(ComparableBytesAbstract Key);
@@ -75,6 +76,86 @@ namespace CryptLink {
         public abstract CacheItem Get(ComparableBytesAbstract Key);
         public abstract bool Remove(ComparableBytesAbstract Key);
         public abstract bool Expire(DateTime ExpiredAfter);
+
+        /// <summary>
+        /// Checks if a key exists in this cache
+        /// </summary>
+        /// <param name="Key">Item Key</param>
+        /// <param name="Recurse">If true, also searches all OverflowCaches</param>
+        /// <returns>True if the object exists</returns>
+        public bool Exists(ComparableBytesAbstract Key, bool Recurse) {
+            bool e = Exists(Key);
+
+            if (Recurse && e == false && OverflowCache != null) {
+                return OverflowCache.Exists(Key, Recurse);
+            }
+
+            return e;
+        }
+
+        /// <summary>
+        /// Gets an item in this cache
+        /// </summary>
+        /// <param name="Key">Item Key</param>
+        /// <param name="Recurse">If true, also searches all OverflowCaches</param>
+        /// <returns>The object or null</returns>
+        public T Get<T>(ComparableBytesAbstract Key, bool Recurse) where T : Hashable {
+            var g = Get<T>(Key);
+
+            if (g == null && OverflowCache != null) {
+                return OverflowCache.Get<T>(Key, Recurse);
+            }
+
+            return g;
+        }
+
+        /// <summary>
+        /// Gets an item in this cache
+        /// </summary>
+        /// <param name="Key">Item Key</param>
+        /// <param name="Recurse">If true, also searches all OverflowCaches</param>
+        /// <returns>The object or null</returns>
+        public CacheItem Get(ComparableBytesAbstract Key, bool Recurse) {
+            var g = Get(Key);
+
+            if (Recurse && g == null && OverflowCache != null) {
+                return OverflowCache.Get(Key, Recurse);
+            }
+
+            return g;
+        }
+
+        /// <summary>
+        /// Removes an item from this cache
+        /// </summary>
+        /// <param name="Key">Item Key</param>
+        /// <param name="Recurse">If true, also searches all OverflowCaches</param>
+        /// <returns>True if the item was removed</returns>
+        public bool Remove(ComparableBytesAbstract Key, bool Recurse) {
+            var g = Remove(Key);
+
+            if (Recurse && g == false && OverflowCache != null) {
+                return OverflowCache.Remove(Key, Recurse);
+            }
+
+            return g;
+        }
+
+        /// <summary>
+        /// Clears all expired items from the cache
+        /// </summary>
+        /// <param name="Key">Item Key</param>
+        /// <param name="ExpiredAfter">The cutoff date for expired items</param>
+        /// <returns>True if any items removed</returns>
+        public bool Expire(DateTime ExpiredAfter, bool Recurse) {
+            var g = Expire(ExpiredAfter);
+
+            if (Recurse && g == false && OverflowCache != null) {
+                return OverflowCache.Expire(ExpiredAfter, Recurse);
+            }
+
+            return g;
+        }
 
         public abstract void Clear();
         public abstract void Dispose();

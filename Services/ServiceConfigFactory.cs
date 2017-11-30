@@ -40,11 +40,7 @@ namespace CryptLink {
             var config = new ServiceConfig();
 
             config.ServerPeerInfo = new Peer() {
-                KnownPublicUris = new List<Uri>(),
-                LastKnownPublicUri = ServerUri,
                 Provider = Provider,
-                PubicallyAccessible = false,
-                ConnectRetryMax = 10,
                 Version = new AppVersionInfo() {
                     ApiCompartibilityVersion = ServiceApiCompartibilityVersion,
                     ApiVersion = ServiceApiVersion,
@@ -79,11 +75,11 @@ namespace CryptLink {
 
             config.Server = new Server() {
                  ServiceAddress = LocalServerUri.OriginalString,
-                 ObjectCache = ObjectCache
+                 StoreCache = ObjectCache
             };
 
             //start the cache
-            config.Server.ObjectCache.Initialize();
+            config.Server.StoreCache.Initialize();
            
             if (GenerateCerts) {
                 var swarmKey = new X509Certificate2Builder {
@@ -106,7 +102,7 @@ namespace CryptLink {
                 }.Build();
 
                 config.Server.CertManager = new CertificateManager(serverKey);
-                config.ServerPeerInfo.PublicKey = Utility.GetPublicKey(serverKey);
+                config.ServerPeerInfo.Cert = Utility.GetPublicKey(serverKey);
 
             }
             

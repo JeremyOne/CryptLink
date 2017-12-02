@@ -22,7 +22,7 @@ namespace CryptLink {
 
         public Peer ServerPeerInfo { get; set; }
         
-        public static ServiceConfig Load(string _ConfigPath, bool CreateFile) {
+        public static ServiceConfig Load(string _ConfigPath, bool CreateFile, string CertPassword) {
             
             var c = new ServiceConfig();
             c.ConfigPath = _ConfigPath;
@@ -37,10 +37,15 @@ namespace CryptLink {
                 }
                      
             } else {
+            
                 c.ConfigIsNew = false;
                 
                 StreamReader file = File.OpenText(_ConfigPath);
                 JsonSerializer serializer = new JsonSerializer();
+                serializer.NullValueHandling = NullValueHandling.Ignore;
+                serializer.TypeNameHandling = TypeNameHandling.Auto;
+                serializer.Formatting = Formatting.Indented;
+
                 c = (ServiceConfig)serializer.Deserialize(file, typeof(ServiceConfig));
 
                 file.Close();
@@ -50,7 +55,8 @@ namespace CryptLink {
                     throw new FileLoadException("Config file was not loaded: " + _ConfigPath);
                 }
 
-                return c;                
+                return c;
+                
             }
 		}
 
@@ -61,6 +67,10 @@ namespace CryptLink {
             }
 
             JsonSerializer serializer = new JsonSerializer();
+            //serializer.Converters.Add(new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+            serializer.TypeNameHandling = TypeNameHandling.Auto;
+            serializer.Formatting = Formatting.Indented;
 
             using (StreamWriter sw = new StreamWriter(ConfigPath)) {
                 using (JsonWriter writer = new JsonTextWriter(sw)) {

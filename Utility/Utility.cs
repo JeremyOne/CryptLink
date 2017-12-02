@@ -1,8 +1,10 @@
-﻿using Org.BouncyCastle.Crypto;
+﻿using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -83,6 +85,25 @@ namespace CryptLink {
 
 			return padSize;
 		}
+
+        /// <summary>
+        /// Deserializes json from utf8 text
+        /// </summary>
+        /// <typeparam name="T">Type to deserialize</typeparam>
+        /// <param name="TextBytes">The UTF8 bytes to decode</param>
+        public static T JsonDeseralizeUtf8<T>(byte[] TextBytes) {
+            string result = System.Text.Encoding.UTF8.GetString(TextBytes);
+            return JsonConvert.DeserializeObject<T>(result);
+        }
+
+        /// <summary>
+        /// Posts a request and deseralizes the response
+        /// </summary>
+        public static T JsonDeseralizePostResponse<T>(string Url, NameValueCollection Data) {
+            var client = new System.Net.WebClient();
+            byte[] response = client.UploadValues(Url, Data);
+            return Utility.JsonDeseralizeUtf8<T>(response);
+        }
 
         public static X509Certificate2 ToX509Certificate2(
             Org.BouncyCastle.X509.X509Certificate BouncyCert,

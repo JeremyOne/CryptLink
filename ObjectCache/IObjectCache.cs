@@ -10,6 +10,7 @@ namespace CryptLink {
 
         bool AcceptingObjects { get; set; }
         bool CacheIsPersistent { get; }
+        bool CacheIsInitalized { get; }
         string ConnectionString { get; set; }
 
         long MinCollectionSize { get; set; }
@@ -41,10 +42,15 @@ namespace CryptLink {
         bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
         bool AddOrUpdate(CacheItem Value);
         T Get<T>(ComparableBytesAbstract Key) where T : Hashable;
+        T Get<T>(ComparableBytesAbstract Key, bool Recurse) where T : Hashable;
         CacheItem Get(ComparableBytesAbstract Key);
+        CacheItem Get(ComparableBytesAbstract Key, bool Recurse);
         bool Expire(DateTime ExpiredAfter);
+        bool Expire(DateTime ExpiredAfter, bool Recurse);
         bool Exists(ComparableBytesAbstract Key);
+        bool Exists(ComparableBytesAbstract Key, bool Recurse);
         bool Remove(ComparableBytesAbstract Key);
+        bool Remove(ComparableBytesAbstract Key, bool Recurse);
 
         double ComputeFitScore(CacheItem ForObject);
 

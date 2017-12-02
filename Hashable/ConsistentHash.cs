@@ -43,6 +43,15 @@ namespace CryptLink
         }
 
         /// <summary>
+        /// Gets the count of all nodes, each node is 1 count regardless of replication weight
+        /// </summary>
+        public long NodeCount {
+            get {
+                return unreplicatedNodes.Values.Count();
+            }
+        }
+
+        /// <summary>
         /// Adds a node, runs replication
         /// </summary>
         /// <param name="node">Item to store, must be abstracted from Hashable</param>

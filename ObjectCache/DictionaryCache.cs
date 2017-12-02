@@ -20,6 +20,12 @@ namespace CryptLink {
             Cache = new ConcurrentDictionary<ComparableBytesAbstract, CacheItem>();
         }
 
+        public override bool CacheIsInitalized {
+            get {
+                return Cache == null;
+            }
+        }
+
         private long _currentCollectionCount;
         public override long CurrentCollectionCount {
             get {

@@ -28,6 +28,10 @@ For feature breakout and completion, see [Roadmap.md](Roadmap.md)
 * Auto-push updates to all members
 * Ability to use TCP or UDP for data transfers
 
+## Project Setup
+`nuget restore -PackagesDirectory Packages`
+For visual studio 2012+ Install the "NUnit 2 Test Adapter" from Tools > Extentions and Updates
+
 ## Storage types
 There are three basic types of data that can be stored in the network, each with different properties
 

@@ -11,7 +11,7 @@ namespace CryptLink {
     /// </summary>
     public class Server {
 
-        public CertificateManager CertManager { get; set; }
+        public Cert Cert { get; set; }
 
         public IObjectCache StoreCache { get; set; }
         public IObjectCache SendCache { get; set; }

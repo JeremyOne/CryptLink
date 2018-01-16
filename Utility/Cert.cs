@@ -8,10 +8,15 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
+using static CryptLink.Hash;
 
 namespace CryptLink {
-    public class CertificateManager {
 
+    /// <summary>
+    /// A wrapper for the x509Certificate2 with many helpers
+    /// </summary>
+    public class Cert : Hashable {
+        
         /// <summary>
         /// The base 64 encoded bytes that comprise the certificate
         /// </summary>
@@ -28,37 +33,43 @@ namespace CryptLink {
         public bool PasswordEncrypt { get; set; }
 
         /// <summary>
+        /// The hash provider for this object
+        /// </summary>
+        public HashProvider Provider { get; set; }
+
+        /// <summary>
         /// The password to encrypt/decrypt the certificate with
         /// </summary>
         [JsonIgnore]
         public SecureString EncryptionPassword { get; set; }
 
-        public CertificateManager() { }
+        public Cert() { }
 
         /// <summary>
         /// Loads the certificate using a SecureString for decryption
         /// This function is only needed when the certificate is encrypted with a password.
         /// </summary>
-        public void LoadCertificate(SecureString EncryptionPassword) {
+        public void LoadCertificate(SecureString EncryptionPassword, HashProvider Provider) {
             this.EncryptionPassword = EncryptionPassword;
-            LoadCertificate();
+            this.Provider = Provider;
+            LoadCertificate(Provider);
         }
 
         [OnDeserialized]
         internal void OnSeralized(StreamingContext context) {
             //after deserialization, load the certificate
             if (PasswordEncrypt == false) {
-                LoadCertificate();
+                LoadCertificate(Provider);
             }
         }
 
-        private void LoadCertificate() {
+        private void LoadCertificate(HashProvider Provider) {
             if (PasswordEncrypt) {
                 if (EncryptionPassword == null) {
                     throw new Exception("No decryption password was specified, can't encrypt the certificate");
                 }
 
-                _certificate = new X509Certificate2(Base64.DecodeBytes(CertificateBase64), EncryptionPassword);
+                _certificate = new X509Certificate2(UrlSafeBase64.DecodeBytes(CertificateBase64), EncryptionPassword);
             }
 
             if (ProtectedStoragePath != null) {
@@ -66,19 +77,24 @@ namespace CryptLink {
             }
 
             if (!PasswordEncrypt && ProtectedStoragePath == null) {
-                _certificate = new X509Certificate2(Base64.DecodeBytes(CertificateBase64));
+                _certificate = new X509Certificate2(UrlSafeBase64.DecodeBytes(CertificateBase64));
             }
+
+            ComputeHash(Provider);
+
         }
 
-        public CertificateManager(X509Certificate2 Certificate) {
+        public Cert(X509Certificate2 Certificate) {
             this._certificate = Certificate;
+            ComputeHash(Provider);
             SeralizeCertificate();
         }
 
-        public CertificateManager(X509Certificate2 Certificate, SecureString EncryptionPassword) {
+        public Cert(X509Certificate2 Certificate, SecureString EncryptionPassword) {
             this._certificate = Certificate;
             this.EncryptionPassword = EncryptionPassword;
             this.PasswordEncrypt = true;
+            ComputeHash(Provider);
             SeralizeCertificate();
         }
 
@@ -87,7 +103,7 @@ namespace CryptLink {
         public string Thumbprint {
             get {
                 CheckCertificate();
-                return _certificate.Thumbprint;
+                return ComputedHash.ToString();
             }
         }
 
@@ -107,7 +123,7 @@ namespace CryptLink {
                     throw new Exception("No decryption password was specified, can't encrypt the certificate");
                 }
 
-                CertificateBase64 = Base64.EncodeBytes(_certificate.Export(X509ContentType.Pkcs12, EncryptionPassword));
+                CertificateBase64 = UrlSafeBase64.EncodeBytes(_certificate.Export(X509ContentType.Pkcs12, EncryptionPassword));
             }
 
             if (ProtectedStoragePath != null) {
@@ -115,10 +131,58 @@ namespace CryptLink {
             }
 
             if (!PasswordEncrypt && ProtectedStoragePath == null) {
-                CertificateBase64 = Base64.EncodeBytes(_certificate.Export(X509ContentType.Pkcs12));
+                CertificateBase64 = UrlSafeBase64.EncodeBytes(_certificate.Export(X509ContentType.Pkcs12));
             }
 
         }
 
+        public PublicKey PublicKey {
+            get {
+                return _certificate.PublicKey;
+            }
+        }
+
+        public bool HasPrivateKey {
+            get {
+                return _certificate.HasPrivateKey;
+            }
+        }
+
+        public int KeyLength {
+            get {
+                return _certificate.PublicKey.Key.KeySize;
+            }
+        }
+
+        /// <summary>
+        /// Re-parses an X509Certificate2 to only contain the public key
+        /// </summary>
+        public Cert RemovePrivateKey() {
+            if (_certificate == null) {
+                return null;
+            } else {
+                return new Cert(new X509Certificate2(_certificate.RawData));
+            }
+
+        }
+
+        public void SignHash(Hash Hash, HashProvider Provider) {
+            if (_certificate.HasPrivateKey && Hash.Bytes != null) {
+                var csp = (RSACryptoServiceProvider)_certificate.PrivateKey;
+                Hash.SignatureBytes = csp.SignHash(Hash.Bytes, Hash.GetOIDForProvider(Provider));
+                Hash.SignatureCertHash = this.ComputedHash.Bytes;
+            } else {
+                throw new NullReferenceException("No private key");
+            }
+        }
+
+        public override byte[] GetHashableData() {
+            if (_certificate == null) {
+                //possible improvement: get from web request
+                throw new NullReferenceException("Certificate not set");
+            } else {
+                return _certificate.PublicKey.EncodedKeyValue.RawData;
+            }
+        }
     }
 }

@@ -77,9 +77,9 @@ namespace CryptLink {
 
             byte[] key;
             if (Item.Name != null) {
-                key = Item.Name.Hash.Bytes;
+                key = Item.Name.ComputedHash.Bytes;
             } else {
-                key = Item.Hash.Bytes;
+                key = Item.ComputedHash.Bytes;
             }
 
             var existingItem = GetItem(key);
@@ -101,7 +101,7 @@ namespace CryptLink {
 		public bool StoreItem(string Name, V Value, Hash Owner) {
             var item = new BlockItem<V>() {
                 Age = DateTime.Now,
-                Name = new HashableString(Name, Provider),
+                Name = new HashableString(Name, Owner.Provider),
                 Status = BlockItemStatus.Pending,
                 Value = Value,
                 Owner = Owner

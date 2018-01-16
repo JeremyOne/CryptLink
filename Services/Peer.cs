@@ -19,9 +19,8 @@ namespace CryptLink {
     /// </summary>
     public class Peer : Hashable, IDisposable {
         public Hash ServerOperator { get; set; }
-        public X509Certificate2 Cert { get; set; }
+        public Cert Cert { get; set; }
         public AppVersionInfo Version { get; set; }
-		public override Hash.HashProvider Provider { get; set; }
         public IServiceClient LocalClient { get; set; }
         public bool Initilized { get; private set; }
 
@@ -40,20 +39,13 @@ namespace CryptLink {
         int sendingThreads = 0;
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
-
-        [JsonIgnore]
-        public override bool HashIsImmutable {
-            get {
-                return true;
-            }
-        }
-
+        
         public void Dispose() {
             foreach (var transport in Transports) {
                 transport.Dispose();
             }
         }
-         
+        
         public T TryGet<T>(ComparableBytesAbstract Key) where T : Hashable {
             var transport = GetTransport();
             return transport.TryGet<T>(Key);
@@ -64,7 +56,7 @@ namespace CryptLink {
                 throw new InvalidOperationException("This peer already initialized");
             }
 
-            logger.Trace($"Peer '{Cert.Thumbprint}' initialized");
+            logger.Trace($"Peer '{this.ComputedHash}' initialized");
             sendCache = SendCache;
         }
 
@@ -78,8 +70,8 @@ namespace CryptLink {
                 throw new InvalidOperationException("The peer has not been initialized");
             }
 
-            sendCache.AddOrUpdate(Item.Hash, Item, ConnectTimeOut);
-            SendQueue.Enqueue(Item.Hash);
+            sendCache.AddOrUpdate(Item.ComputedHash, Item, ConnectTimeOut);
+            SendQueue.Enqueue(Item.ComputedHash);
 
             if (MaxSendingThreads < sendingThreads) {
                 Task.Run(() => ProcessSendQueue());
@@ -119,7 +111,7 @@ namespace CryptLink {
         /// </summary>
         public IPeerTransport GetTransport() {
             if (Transports == null || Transports.Count == 0) {
-                throw new NullReferenceException("No transports on peer: " + this.Hash.ToString());
+                throw new NullReferenceException("No transports on peer: " + this.ComputedHash.ToString());
             } else if (Transports.Count == 1) {
                 return Transports.First();
             } else {
@@ -127,14 +119,9 @@ namespace CryptLink {
             }
         }
 
-        public override byte[] HashableData() {
-            if (Cert == null) {
-                //possible improvement: get from web request
-                throw new NullReferenceException("Public key of a peer can not be null");
-            } else {
-                return Cert.PublicKey.EncodedKeyValue.RawData;
-            }
+        public override byte[] GetHashableData() {
+            return Cert.GetHashableData();
         }
-
+        
     }
 }

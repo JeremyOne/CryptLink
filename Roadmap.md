@@ -5,10 +5,11 @@
 - [X] Hash - Represents a hash of an object, the hash provider, size and other metadata as needed
 - [X] IHashable / Hashable - interface and abstract to be implemented on any object that will support hashing
 - [X] Consistent Hash Table - Stores hashable objects in a DHT/CHT, for finding what servers any given hashed object are stored on
+- [ ] Signature - Allow hashable objects to be signed and verified
 
-## Object Signing Framework
-- [ ] Signature - Object for storing the signature and hash of an object
-- [ ] ISignable / Signable - Interface and abstract for implementing signatures of objects
+## Certificates
+- [ ] Create a cache store for all known peer certs
+- [ ] Find the best way to store private keys across all platforms and keep them encrypted or protected as often as possible
 
 ## Object Caching
 - [X] CacheItem - Wrapper for hashable items to be stored in an IObjectCache
@@ -62,3 +63,6 @@
 - [ ] Exchange blocks with peers
 - [ ] Peer Reputation and blacklisting
 - [ ] User Reputation chain
+
+## Misc - Low Priority Ideas
+- [ ] Add support for SHA3 https://www.nuget.org/packages/SHA3

@@ -12,7 +12,7 @@ namespace CryptLink {
             X509Certificate2 cert = (X509Certificate2)value;
 
             writer.WriteValue(
-                Base64.EncodeBytes(
+                UrlSafeBase64.EncodeBytes(
                     cert.Export(X509ContentType.Pkcs12)
                 )
             );
@@ -23,7 +23,7 @@ namespace CryptLink {
             if (reader?.Value != null && reader.Value.GetType() == typeof(string)) {
                 
                 X509Certificate2 cert = new X509Certificate2(
-                    Base64.DecodeBytes(
+                    UrlSafeBase64.DecodeBytes(
                         (string)reader.Value
                     )
                 );

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,22 +10,21 @@ namespace CryptLink {
         /// <summary>
         /// A byte array of data to be hashed
         /// </summary>
-        byte[] HashableData();
+        byte[] GetHashableData();
 
         /// <summary>
-        /// The default HashProvider for this object
+        /// Gets the hash of this object using a specified provider, and signs it with a certificate (if provided)
         /// </summary>
-        Hash.HashProvider Provider { get; set; }
+        void ComputeHash(Hash.HashProvider Provider, Cert SigningCert);
 
-        /// <summary>
-        /// Gets the hash of this object using a specified provider
-        /// </summary>
-        Hash GetHash(Hash.HashProvider Provider);
+        bool VerifyHash();
+
+        bool VerifySignature(Cert SigningPublicCert);
 
         /// <summary>
         /// Gets the hash of this object using the default provider
         /// </summary>
-        Hash Hash { get; }
+        Hash ComputedHash { get; }
 
     }
 }

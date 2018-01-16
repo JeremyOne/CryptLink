@@ -40,7 +40,6 @@ namespace CryptLink {
             var config = new ServiceConfig();
 
             config.ServerPeerInfo = new Peer() {
-                Provider = Provider,
                 Version = new AppVersionInfo() {
                     ApiCompartibilityVersion = ServiceApiCompartibilityVersion,
                     ApiVersion = ServiceApiVersion,
@@ -82,27 +81,27 @@ namespace CryptLink {
             config.Server.StoreCache.Initialize();
            
             if (GenerateCerts) {
-                var swarmKey = new X509Certificate2Builder {
+                var swarmKey = new CertBuilder {
                     Issuer = SigningCert,
                     SubjectName = "CN=" + config.Swarm.SwarmName,
                     KeyStrength = config.Swarm.RootCertMinLength,
                     NotBefore = DateTime.Now,
                     NotAfter = DateTime.Now.AddYears(10)
-                }.Build();
+                }.BuildX509();
                 
-                config.Swarm.CertManager = new CertificateManager(swarmKey);
+                config.Swarm.Cert = new Cert(swarmKey);
                 //config.Swarm.PublicKey = Utility.GetPublicKey(swarmKey);
 
-                var serverKey = new X509Certificate2Builder {
+                var serverKey = new CertBuilder {
                     Issuer = SigningCert,
                     SubjectName = "CN=" + config.Swarm.SwarmName,
                     KeyStrength = config.Swarm.RootCertMinLength,
                     NotBefore = DateTime.Now,
                     NotAfter = DateTime.Now.AddYears(10)
-                }.Build();
+                }.BuildX509();
 
-                config.Server.CertManager = new CertificateManager(serverKey);
-                config.ServerPeerInfo.Cert = Utility.GetPublicKey(serverKey);
+                config.Server.Cert = new Cert(serverKey);
+                config.ServerPeerInfo.Cert = config.Server.Cert.RemovePrivateKey();
 
             }
             

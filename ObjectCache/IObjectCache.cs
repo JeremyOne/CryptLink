@@ -39,10 +39,10 @@ namespace CryptLink {
         /// <summary>
         /// Add or update an item in this cache
         /// </summary>
-        bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
+        bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) where T : IHashable;
         bool AddOrUpdate(CacheItem Value);
-        T Get<T>(ComparableBytesAbstract Key) where T : Hashable;
-        T Get<T>(ComparableBytesAbstract Key, bool Recurse) where T : Hashable;
+        T Get<T>(ComparableBytesAbstract Key) where T : IHashable;
+        T Get<T>(ComparableBytesAbstract Key, bool Recurse) where T : IHashable;
         CacheItem Get(ComparableBytesAbstract Key);
         CacheItem Get(ComparableBytesAbstract Key, bool Recurse);
         bool Expire(DateTime ExpiredAfter);

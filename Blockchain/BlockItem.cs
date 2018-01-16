@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Security.Cryptography.X509Certificates;
 
 namespace CryptLink {
     public class BlockItem<V> : Hashable
@@ -11,15 +12,7 @@ namespace CryptLink {
 
         public HashableString Name { get; set; }
         public V Value { get; set; }
-        public override Hash.HashProvider Provider { get; set; }
-
-		[JsonIgnore]
-        public override bool HashIsImmutable {
-            get {
-                return false;
-            }
-        }
-
+        
         public Hash Owner { get; set; }
         public DateTime Age { get; set; }
 		public BlockItemStatus Status { get; set; }
@@ -27,18 +20,17 @@ namespace CryptLink {
 		public int ConfirmedNodes { get; set; }
 		public int UnconfirmedNodes { get; set; }
 
-        public override byte[] HashableData() {
+        public override byte[] GetHashableData() {
             return
-	            Name.HashableData()
+	            Name.GetHashableData()
 	             .Concat(Owner.Bytes)
-                 .Concat(BitConverter.GetBytes((int)Provider))
 	             .Concat(BitConverter.GetBytes(Age.Ticks))
-	             .Concat(Value.HashableData()).ToArray();
+	             .Concat(Value.GetHashableData()).ToArray();
         }
     }
 
 	public enum BlockItemStatus{
-		Pending,
+        Pending,
 		Comitted,
 		Confirmed,
 		Expired,

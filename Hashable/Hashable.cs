@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,75 +13,61 @@ namespace CryptLink
     /// </summary>
     public abstract class Hashable : IHashable {
 
-        public abstract Hash.HashProvider Provider { get; set; }
-
         /// <summary>
         /// A byte array of data to be hashed
         /// </summary>
-        public abstract byte[] HashableData();
+        public abstract byte[] GetHashableData();
+        
 
-        /// <summary>
-        /// A bool indicating if this object is Immutable, and the hash should only be computed once
-        /// </summary>
-        /// <returns></returns>
-        public abstract bool HashIsImmutable { get; }
-
-        /// <summary>
-        /// Get a Hash object for this class with a specified provider
-        /// </summary>
-        public Hash GetHash(Hash.HashProvider _Provider) {
-            return Hash.Compute(HashableData(), _Provider);
-        }
-
-        /// <summary>
-        /// Cache the hash
-        /// </summary>
-        private Hash _Hash = default(Hash);
-
-        /// <summary>
-        /// Cache the bytes
-        /// </summary>
-        private byte[] _HashBytes = null;
-
-        /// <summary>
-        /// Get a Hash object for this class with the default provider
-        /// </summary>
-        [JsonIgnore]
-        public Hash Hash {
+        [LiteDB.BsonId]
+        public byte[] ComputedHashBytes {
             get {
-                if (HashIsImmutable) {
-                    if (_Hash?.Bytes == null) {
-                        _Hash = Hash.Compute(HashableData(), Provider);
-
-                        if (_Hash != (Hash)null) {
-                            _HashBytes = _Hash.Bytes;
-                        }
-                    }
-
-                    return _Hash;
+                if (ComputedHash != null) {
+                    return ComputedHash.Bytes;
                 } else {
-                    return Hash.Compute(HashableData(), Provider);
-                }
-            }
-        }
-
-        [LiteDB.BsonId, LiteDB.BsonIndex]
-        public byte[] HashBytes {
-            get {
-                if (_HashBytes != null) {
-                    return _HashBytes;
-                } else {
-                    return Hash.Bytes;
+                    throw new NullReferenceException("No hash exists");
                 }
             }
         }
 
         /// <summary>
-        /// Returns if the specified object is a subclass of Hashable
+        /// The computed hash for this object, will be null until ComputeHash() is called
         /// </summary>
-        public static bool IsHashable(object obj) {
-            return obj.GetType().IsSubclassOf(typeof(Hashable));
+        public Hash ComputedHash { get; private set; }
+
+        /// <summary>
+        /// Compute a hash for this object and optionally signs it
+        /// </summary>
+        /// <param name="Provider">The hash provider to use</param>
+        /// <param name="SigningCert">If provided the cert to sign the hash with</param>
+        public void ComputeHash(Hash.HashProvider Provider, Cert SigningCert = null) {
+            ComputedHash = Hash.Compute(GetHashableData(), Provider, SigningCert);
+        }
+        
+        /// <summary>
+        /// Verifies the current hash
+        /// </summary>
+        /// <returns>Returns TRUE if hash verifies correctly</returns>
+        public bool VerifyHash() {
+            if (ComputedHash == null) {
+                throw new NullReferenceException("This hashable object does not have a computed hash, call ComputeHash() first.");
+            } else {
+                var newHash = Hash.Compute(GetHashableData(), ComputedHash.Provider);
+                return ComputedHash == newHash;
+            }
         }
 
+        /// <summary>
+        /// Verifies the hash and signature of an object
+        /// </summary>
+        /// <param name="SigningPublicCert"></param>
+        /// <returns>Returns TRUE if the hash and signature verify correctly</returns>
+        public bool VerifySignature(Cert SigningPublicCert) {
+            if (VerifyHash() == false) {
+                return false;
+            }
+
+            return ComputedHash.Verify(GetHashableData(), SigningPublicCert);
+        }
     }
 }

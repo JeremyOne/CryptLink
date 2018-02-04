@@ -56,7 +56,7 @@ namespace CryptLink.Services {
                 //verify object
                 if (request.Item != null) {
 
-                    if (request.Item.VerifyHash()) {
+                    if (request.Item.Verify()) {
                         SConfig.Server.StoreCache.AddOrUpdate(request.Item.ComputedHash, request.Item, request.ExpireAt);
                         return HttpResult.Status201Created("Stored", null);
                     } else {

@@ -43,6 +43,9 @@ namespace CryptLink {
         [JsonIgnore]
         public SecureString EncryptionPassword { get; set; }
 
+        /// <summary>
+        /// For deserializing
+        /// </summary>
         public Cert() { }
 
         /// <summary>
@@ -56,13 +59,13 @@ namespace CryptLink {
         }
 
         [OnDeserialized]
-        internal void OnSeralized(StreamingContext context) {
+        internal void OnDeseralized(StreamingContext context) {
             //after deserialization, load the certificate
             if (PasswordEncrypt == false) {
                 LoadCertificate(Provider);
             }
         }
-
+        
         private void LoadCertificate(HashProvider Provider) {
             if (PasswordEncrypt) {
                 if (EncryptionPassword == null) {
@@ -115,6 +118,7 @@ namespace CryptLink {
             return true;
         }
 
+        [OnSerializing]
         public void SeralizeCertificate() {
             CheckCertificate();
 
@@ -136,6 +140,7 @@ namespace CryptLink {
 
         }
 
+        [JsonIgnore]
         public PublicKey PublicKey {
             get {
                 return _certificate.PublicKey;
@@ -166,6 +171,11 @@ namespace CryptLink {
 
         }
 
+        /// <summary>
+        /// Use this cert to sign a hash
+        /// </summary>
+        /// <param name="Hash">The hash to sign</param>
+        /// <param name="Provider">The provider to use</param>
         public void SignHash(Hash Hash, HashProvider Provider) {
             if (_certificate.HasPrivateKey && Hash.Bytes != null) {
                 var csp = (RSACryptoServiceProvider)_certificate.PrivateKey;

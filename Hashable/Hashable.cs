@@ -43,18 +43,23 @@ namespace CryptLink
         public void ComputeHash(Hash.HashProvider Provider, Cert SigningCert = null) {
             ComputedHash = Hash.Compute(GetHashableData(), Provider, SigningCert);
         }
-        
+
         /// <summary>
-        /// Verifies the current hash
+        /// 
         /// </summary>
-        /// <returns>Returns TRUE if hash verifies correctly</returns>
-        public bool VerifyHash() {
-            if (ComputedHash == null) {
-                throw new NullReferenceException("This hashable object does not have a computed hash, call ComputeHash() first.");
-            } else {
-                var newHash = Hash.Compute(GetHashableData(), ComputedHash.Provider);
-                return ComputedHash == newHash;
-            }
+        /// <returns></returns>
+        public bool Verify() {
+            string n = null;
+            return ComputedHash.Verify(GetHashableData(), out n);
+        }
+
+        public bool Verify(out string Reason) {
+            return ComputedHash.Verify(GetHashableData(), out Reason);
+        }
+
+        public bool Verify(Cert SigningPublicCert) {
+            string n = null;
+            return ComputedHash.Verify(GetHashableData(), out n, SigningPublicCert);
         }
 
         /// <summary>
@@ -62,12 +67,8 @@ namespace CryptLink
         /// </summary>
         /// <param name="SigningPublicCert"></param>
         /// <returns>Returns TRUE if the hash and signature verify correctly</returns>
-        public bool VerifySignature(Cert SigningPublicCert) {
-            if (VerifyHash() == false) {
-                return false;
-            }
-
-            return ComputedHash.Verify(GetHashableData(), SigningPublicCert);
+        public bool Verify(Cert SigningPublicCert, out string Reason) {
+            return ComputedHash.Verify(GetHashableData(), out Reason, SigningPublicCert);
         }
     }
 }

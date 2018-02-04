@@ -17,9 +17,13 @@ namespace CryptLink {
         /// </summary>
         void ComputeHash(Hash.HashProvider Provider, Cert SigningCert);
 
-        bool VerifyHash();
+        bool Verify();
 
-        bool VerifySignature(Cert SigningPublicCert);
+        bool Verify(out string Reason);
+
+        bool Verify(Cert SigningPublicCert);
+
+        bool Verify(Cert SigningPublicCert, out string Reason);
 
         /// <summary>
         /// Gets the hash of this object using the default provider

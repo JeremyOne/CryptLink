@@ -17,7 +17,7 @@ namespace CryptLink {
     /// <summary>
     /// Peer - A network accessible host
     /// </summary>
-    public class Peer : Hashable, IDisposable {
+    public class Peer : IHashable, IDisposable {
         public Hash ServerOperator { get; set; }
         public Cert Cert { get; set; }
         public AppVersionInfo Version { get; set; }
@@ -34,7 +34,7 @@ namespace CryptLink {
         /// Max number of threads to send in, a safe number is equal to the number of transports
         /// </summary>
         public int MaxSendingThreads { get; set; } = 2;
-
+        
         IObjectCache sendCache;
         int sendingThreads = 0;
 
@@ -119,9 +119,22 @@ namespace CryptLink {
             }
         }
 
-        public override byte[] GetHashableData() {
-            return Cert.GetHashableData();
-        }
-        
+
+        //Pass all IHashable interface to Cert
+
+        public Hash ComputedHash { get => ((IHashable)Cert).ComputedHash; set => ((IHashable)Cert).ComputedHash = value; }
+
+        public void ComputeHash(Hash.HashProvider Provider, Cert SigningCert) => ((IHashable)Cert).ComputeHash(Provider, SigningCert);
+
+        public bool Verify() => ((IHashable)Cert).Verify();
+
+        public bool Verify(out string Reason) => ((IHashable)Cert).Verify(out Reason);
+
+        public bool Verify(Cert SigningPublicCert) => ((IHashable)Cert).Verify(SigningPublicCert);
+
+        public bool Verify(Cert SigningPublicCert, out string Reason) => ((IHashable)Cert).Verify(SigningPublicCert, out Reason);
+
+        public byte[] GetHashableData() => ((IHashable)Cert).GetHashableData();
+
     }
 }

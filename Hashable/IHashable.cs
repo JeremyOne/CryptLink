@@ -26,9 +26,9 @@ namespace CryptLink {
         bool Verify(Cert SigningPublicCert, out string Reason);
 
         /// <summary>
-        /// Gets the hash of this object using the default provider
+        /// The computed hash of this object
         /// </summary>
-        Hash ComputedHash { get; }
+        Hash ComputedHash { get; set; }
 
     }
 }

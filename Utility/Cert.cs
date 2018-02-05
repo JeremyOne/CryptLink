@@ -43,10 +43,44 @@ namespace CryptLink {
         [JsonIgnore]
         public SecureString EncryptionPassword { get; set; }
 
+        private X509Certificate2 _certificate { get; set; }
+
+        [JsonIgnore]
+        public string Thumbprint => _certificate.Thumbprint;
+
+        [JsonIgnore]
+        public PublicKey PublicKey => _certificate.PublicKey;
+
+        public bool HasPrivateKey => _certificate.HasPrivateKey;
+
+        public int KeyLength => _certificate.PublicKey.Key.KeySize;
+
         /// <summary>
         /// For deserializing
         /// </summary>
         public Cert() { }
+
+        public Cert(X509Certificate2 Certificate) {
+            this._certificate = Certificate;
+            ComputeHash(Provider);
+            SeralizeCertificate();
+        }
+
+        public Cert(X509Certificate2 Certificate, SecureString EncryptionPassword) {
+            this._certificate = Certificate;
+            this.EncryptionPassword = EncryptionPassword;
+            this.PasswordEncrypt = true;
+            ComputeHash(Provider);
+            SeralizeCertificate();
+        }
+
+        public bool CheckCertificate() {
+            if (_certificate == null) {
+                throw new NullReferenceException("The certificate does not exist, make sure it is accessible, the decryption password is correct");
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// Loads the certificate using a SecureString for decryption
@@ -57,15 +91,10 @@ namespace CryptLink {
             this.Provider = Provider;
             LoadCertificate(Provider);
         }
-
-        [OnDeserialized]
-        internal void OnDeseralized(StreamingContext context) {
-            //after deserialization, load the certificate
-            if (PasswordEncrypt == false) {
-                LoadCertificate(Provider);
-            }
-        }
-        
+      
+        /// <summary>
+        /// Loads an unencrypted cert
+        /// </summary>
         private void LoadCertificate(HashProvider Provider) {
             if (PasswordEncrypt) {
                 if (EncryptionPassword == null) {
@@ -87,38 +116,23 @@ namespace CryptLink {
 
         }
 
-        public Cert(X509Certificate2 Certificate) {
-            this._certificate = Certificate;
-            ComputeHash(Provider);
-            SeralizeCertificate();
-        }
-
-        public Cert(X509Certificate2 Certificate, SecureString EncryptionPassword) {
-            this._certificate = Certificate;
-            this.EncryptionPassword = EncryptionPassword;
-            this.PasswordEncrypt = true;
-            ComputeHash(Provider);
-            SeralizeCertificate();
-        }
-
-        private X509Certificate2 _certificate { get; set; }
-
-        public string Thumbprint {
-            get {
-                CheckCertificate();
-                return ComputedHash.ToString();
+        [OnDeserialized]
+        internal void OnDeseralized(StreamingContext context) {
+            //after deserialization, load the certificate
+            if (PasswordEncrypt == false) {
+                LoadCertificate(Provider);
             }
-        }
-
-        public bool CheckCertificate() {
-            if (_certificate == null) {
-                throw new NullReferenceException("The certificate does not exist, make sure it is accessible, the decryption password is correct");
-            }
-
-            return true;
         }
 
         [OnSerializing]
+        internal void OnSerializing(StreamingContext context) {
+            //before serialize, encrypt the certificate
+            if (PasswordEncrypt == true) {
+                SeralizeCertificate();
+            }
+        }
+
+
         public void SeralizeCertificate() {
             CheckCertificate();
 
@@ -140,24 +154,8 @@ namespace CryptLink {
 
         }
 
-        [JsonIgnore]
-        public PublicKey PublicKey {
-            get {
-                return _certificate.PublicKey;
-            }
-        }
 
-        public bool HasPrivateKey {
-            get {
-                return _certificate.HasPrivateKey;
-            }
-        }
 
-        public int KeyLength {
-            get {
-                return _certificate.PublicKey.Key.KeySize;
-            }
-        }
 
         /// <summary>
         /// Re-parses an X509Certificate2 to only contain the public key

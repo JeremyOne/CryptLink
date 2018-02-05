@@ -20,7 +20,7 @@ namespace CryptLink
     /// works by putting content in the host with the next most similar hash
     /// </summary>
     /// <typeparam name="T">Type of object to store, must be an abstract class of Hashable</typeparam>
-    public class ConsistentHash<T> where T : Hashable {
+    public class ConsistentHash<T> where T : IHashable {
 
         SortedDictionary<Hash, T> circle = new SortedDictionary<Hash, T>();
         SortedDictionary<Hash, T> unreplicatedNodes = new SortedDictionary<Hash, T>();

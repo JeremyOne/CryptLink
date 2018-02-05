@@ -19,7 +19,7 @@ namespace CryptLink
         public abstract byte[] GetHashableData();
         
 
-        [LiteDB.BsonId]
+        [LiteDB.BsonId, JsonIgnore]
         public byte[] ComputedHashBytes {
             get {
                 if (ComputedHash != null) {
@@ -33,7 +33,7 @@ namespace CryptLink
         /// <summary>
         /// The computed hash for this object, will be null until ComputeHash() is called
         /// </summary>
-        public Hash ComputedHash { get; private set; }
+        public Hash ComputedHash { get; set; }
 
         /// <summary>
         /// Compute a hash for this object and optionally signs it

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace CryptLink
         /// <summary>
         /// The number of bytes hashed to get this result
         /// </summary>
+        [JsonIgnore]
         public int SourceByteLength { get; set; }
 
         static HashAlgorithm[] hashAlgorithms = new HashAlgorithm[Enum.GetNames(typeof(HashProvider)).Length];

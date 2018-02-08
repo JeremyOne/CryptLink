@@ -28,7 +28,7 @@ namespace CryptLink {
         }
 
         public ComparableBytesAbstract GetKeyCByte() {
-            return Hash.FromComputedBytes(Key, Value.Hash.Provider, 0);
+            return Hash.FromComputedBytes(Key, Value.ComputedHash.Provider, 0);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace CryptLink {
 
             double totalHitsScore = 1 - Utility.GetRange(0, (MemoryHits + DiskHits) / (DateTime.Now - AddedDate).TotalHours, hphMax); //25% of score
             double lastHitScore = 1 - Utility.GetRange(0, (DateTime.Now - LastHit).TotalHours, hourMax); //50% of score
-            double sizeScore = Utility.GetRange(0, Value.Hash.SourceByteLength, sizeBuinaryMax); //25% of score
+            double sizeScore = Utility.GetRange(0, Value.ComputedHash.SourceByteLength, sizeBuinaryMax); //25% of score
 
             return (totalHitsScore * 0.25) + (lastHitScore * 0.5) + (sizeScore * 0.25);
             

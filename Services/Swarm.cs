@@ -13,7 +13,7 @@ namespace CryptLink {
 
         public Hash.HashProvider Provider { get; set; }
 
-        public CertificateManager CertManager { get; set; }
+        public Cert Cert { get; set; }
 
         public int RootPeerWeight { get; set; } = 150;
         public int KnownPeerWeight { get; set; } = 100;

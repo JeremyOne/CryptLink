@@ -1,35 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using static CryptLink.Hash;
 
 namespace CryptLink {
     public class MessageContainer : Hashable {
         public Hash SenderHash { get; private set; }
         public Hash ReceiverHash { get; private set; }
-        public override Hash.HashProvider Provider { get; set; }
         public bool Encrypted { get; private set; }
         public byte[] Payload { get; private set; }
+        public Cert SenderCert { get; private set; }
+        public Hash.HashProvider Provider { get; private set; }
 
         static int intLength = sizeof(int);
-
-        [JsonIgnore]
-		public override bool HashIsImmutable {
-            get {
-                return true;
-            }
-        }
-
-        public MessageContainer(Hash Sender, Hash Receiver, Hash.HashProvider HashProvider, byte[] MessagePayload) {
+        
+        public MessageContainer(Hash Sender, Hash Receiver, Hash.HashProvider HashProvider, byte[] MessagePayload, Cert SenderCertificate) {
             SenderHash = Sender;
             ReceiverHash = Receiver;
-            Provider = HashProvider;
             Payload = MessagePayload;
+            SenderCert = SenderCertificate;
+            Provider = HashProvider;
+
+            ComputeHash(Provider, SenderCert);
         }
 
-        public override byte[] HashableData() {
+        public override byte[] GetHashableData() {
             return BitConverter.GetBytes((int)Provider)
                 .Concat(BitConverter.GetBytes(Encrypted))
                 .Concat(SenderHash.Bytes)
@@ -37,39 +36,32 @@ namespace CryptLink {
                 .Concat(Payload)
                 .ToArray();
         }
-
+        
         public byte[] ToBinary() {
-            return HashableData()
-                .Concat(Hash.Bytes)
-                .ToArray();
-        }
-
-        public static int ByteCount(Hash.HashProvider ForProvider, int PayloadBytes, bool ZeroIndexed) {
-            int pl = Hash.GetProviderByteLength(ForProvider);
-
-            if (ZeroIndexed) {
-                return intLength + PayloadBytes + (pl * 3);
-            } else {
-                return intLength + PayloadBytes + (pl * 3) + 1;
+            if (ComputedHash == null) {
+                throw new InvalidOperationException("A hash has not been computed for this message, can't convert to binary");
             }
-            
+
+            return GetHashableData()
+                .Concat(ComputedHash.Bytes)
+                .ToArray();
         }
 
         /// <summary>
         /// Non-zero index byte length
         /// </summary>
-        public int ByteLength(bool ZeroIndexed) {
-            return ByteCount(Provider, Payload.Length, ZeroIndexed);
+        public static int MinMessageByteLength(HashProvider Provider) {
+            return intLength + (Hash.GetProviderByteLength(Provider) * 3);
         }
 
         public override string ToString() {
             return "Sender: '" + SenderHash.ToString() + 
                 "', Receiver: '" + ReceiverHash.ToString() +
                 "', Payload length: " + Payload.Length.ToString() +
-                "', Hash: '" + Hash.ToString();
+                "', Hash: '" + ComputedHash?.ToString();
         }
 
-        public static MessageContainer FromBinary(byte[] Blob, bool EnforceHashCheck) {
+        public static MessageContainer FromBinary(byte[] Blob, bool EnforceHashCheck, Cert SigningCert) {
 
             //check basic validity
             if (Blob == null) {
@@ -92,7 +84,7 @@ namespace CryptLink {
             int hashLength = Hash.GetProviderByteLength(provider);
 
             //check provider specific minimum length
-            int minLength = ByteCount(provider, 0, false);
+            int minLength = MinMessageByteLength(provider);
             if (Blob.Length < minLength) {
                 throw new ArgumentOutOfRangeException("Blob is too short for specified hash provider");
             }
@@ -119,11 +111,12 @@ namespace CryptLink {
                 Hash.FromComputedBytes(sender, provider, 0),
                 Hash.FromComputedBytes(receiver, provider, 0),
                 provider,
-                payload
+                payload,
+                SigningCert
             );
 
             //verify hash
-            var newHash = container.Hash;
+            var newHash = container.ComputedHash;
             var oldHash = Hash.FromComputedBytes(hash, provider, Blob.Length);
 
             if (newHash == oldHash || EnforceHashCheck == false) {

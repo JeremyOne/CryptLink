@@ -14,11 +14,10 @@ namespace CryptLink.Services {
     [Route("/store")]
     public class StoreRequest {
         public TimeSpan ExpireAt { get; set; }
-        public string SeralizedItem { get; set; }
+        public IHashable Item { get; set; }
     }
 
     public class StoreResponse {
-        public Hash ItemHash { get; set; }
         public bool ItemAdded { get; set; }
     }
 
@@ -55,13 +54,15 @@ namespace CryptLink.Services {
 
             if (SConfig.Server.AcceptingObjects) {
                 //verify object
-                if (request.SeralizedItem != null) {
-                    var h = new HashableString(request.SeralizedItem, SConfig.Swarm.Provider);
-                    SConfig.Server.StoreCache.AddOrUpdate(h.Hash, h, request.ExpireAt);
-                    return new StoreResponse() {
-                        ItemHash = h.Hash,
-                        ItemAdded = true
-                    };
+                if (request.Item != null) {
+
+                    if (request.Item.Verify()) {
+                        SConfig.Server.StoreCache.AddOrUpdate(request.Item.ComputedHash, request.Item, request.ExpireAt);
+                        return HttpResult.Status201Created("Stored", null);
+                    } else {
+                        return HttpError.Conflict("Hash was invalid");
+                    }
+
                 }
             }
 
@@ -77,7 +78,7 @@ namespace CryptLink.Services {
             if (SConfig.Server.HoldingObjects) {
                 if (request.ItemHash == (Hash)null) {
                     throw new ArgumentException("ItemHash must be assigned");
-                } else if (request.ItemHash.Valid() == false) {
+                } else if (request.ItemHash.HashLengthValid() == false) {
                     throw new ArgumentException("ItemHash data is not valid");
                 } else if (request.ItemHash.Provider != SConfig.Swarm.Provider) {
                     throw new ArgumentException("ItemHash must be the provider type: " + SConfig.Swarm.Provider.ToString());

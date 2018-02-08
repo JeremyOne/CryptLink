@@ -69,10 +69,10 @@ namespace CryptLink {
         public IObjectCache OverflowCache { get; set; }
         
 
-        public abstract bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) where T : Hashable;
+        public abstract bool AddOrUpdate<T>(ComparableBytesAbstract Key, T Value, TimeSpan ExpireSpan) where T : IHashable;
         public abstract bool AddOrUpdate(CacheItem Value);
         public abstract bool Exists(ComparableBytesAbstract Key);
-        public abstract T Get<T>(ComparableBytesAbstract Key) where T : Hashable;
+        public abstract T Get<T>(ComparableBytesAbstract Key) where T : IHashable;
         public abstract CacheItem Get(ComparableBytesAbstract Key);
         public abstract bool Remove(ComparableBytesAbstract Key);
         public abstract bool Expire(DateTime ExpiredAfter);
@@ -99,7 +99,7 @@ namespace CryptLink {
         /// <param name="Key">Item Key</param>
         /// <param name="Recurse">If true, also searches all OverflowCaches</param>
         /// <returns>The object or null</returns>
-        public T Get<T>(ComparableBytesAbstract Key, bool Recurse) where T : Hashable {
+        public T Get<T>(ComparableBytesAbstract Key, bool Recurse) where T : IHashable {
             var g = Get<T>(Key);
 
             if (g == null && OverflowCache != null) {
@@ -290,7 +290,7 @@ namespace CryptLink {
         public double ComputeFitScore(CacheItem ForObject) {
             double score = 1;
 
-            long itemSize = ForObject.Value.Hash.SourceByteLength;
+            long itemSize = ForObject.Value.ComputedHash.SourceByteLength;
             if ((itemSize > MaxObjectSize) || (itemSize < MinObjectSize)) {
                 score -= 0.3;
             }

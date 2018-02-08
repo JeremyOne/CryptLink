@@ -49,7 +49,7 @@ namespace CryptLink {
 
         public static string GetBytesB64(int ByteLength) {
             var b = GetBytes(ByteLength);
-            return Base64.EncodeBytes(b);
+            return UrlSafeBase64.EncodeBytes(b);
         }
 
 		/// <summary>
@@ -249,50 +249,39 @@ namespace CryptLink {
             }
             
         }
+        
 
-        /// <summary>
-        /// Re-parses an X509Certificate2 to only contain the public key
-        /// </summary>
-        public static X509Certificate2 GetPublicKey(X509Certificate2 FromCert) {
-            if (FromCert == null) {
-                return null;
-            } else {
-                return new X509Certificate2(FromCert.RawData);
-            }
-            
-        }
-
-        /// <summary>
-        /// Signs any Hashable item
-        /// </summary>
-        /// <typeparam name="T">The type</typeparam>
-        /// <param name="HashableItem">Object to sign</param>
-        /// <param name="Provider">Hash provider</param>
-        /// <param name="SigningCert">The cert to sign with</param>
-        /// <returns>A</returns>
-        public static byte[] Sign<T>(T HashableItem, Hash.HashProvider Provider, X509Certificate2 SigningCert) where T : Hashable {
-            RSACryptoServiceProvider csp = (RSACryptoServiceProvider)SigningCert.PrivateKey;
-            byte[] hash = HashableItem.GetHash(Provider).Bytes;
-            var providerOID = Hash.GetOIDForProvider(Provider);
-            return csp.SignHash(hash, providerOID);
-        }
+        ///// <summary>
+        ///// Signs any Hashable item
+        ///// </summary>
+        ///// <typeparam name="T">The type</typeparam>
+        ///// <param name="HashableItem">Object to sign</param>
+        ///// <param name="Provider">Hash provider</param>
+        ///// <param name="SigningCert">The cert to sign with</param>
+        ///// <returns>A</returns>
+        //public static byte[] Sign<T>(T HashableItem, Hash.HashProvider Provider, X509Certificate2 SigningCert) where T : Hashable {
+        //    RSACryptoServiceProvider csp = (RSACryptoServiceProvider)SigningCert.PrivateKey;
+        //    byte[] hash = HashableItem.GetHash(Provider).Bytes;
+        //    var providerOID = Hash.GetOIDForProvider(Provider);
+        //    return csp.SignHash(hash, providerOID);
+        //}
 
 
-        /// <summary>
-        /// Verifies any Hashable item against a key and signature
-        /// </summary>
-        /// <typeparam name="T">The type</typeparam>
-        /// <param name="HashableItem">Item to verify</param>
-        /// <param name="signature">Signature Bytes</param>
-        /// <param name="Provider">Hash Provider</param>
-        /// <param name="VerifyCert">The cert to verify against</param>
-        /// <returns></returns>
-        public static bool Verify<T>(T HashableItem, byte[] signature, Hash.HashProvider Provider, X509Certificate2 VerifyCert) where T : Hashable {
-            RSACryptoServiceProvider csp = (RSACryptoServiceProvider)VerifyCert.PublicKey.Key;
-            byte[] hash = HashableItem.GetHash(Provider).Bytes;
-            var providerOID = Hash.GetOIDForProvider(Provider);
-            return csp.VerifyHash(hash, providerOID, signature);
-        }
+        ///// <summary>
+        ///// Verifies any Hashable item against a key and signature
+        ///// </summary>
+        ///// <typeparam name="T">The type</typeparam>
+        ///// <param name="HashableItem">Item to verify</param>
+        ///// <param name="signature">Signature Bytes</param>
+        ///// <param name="Provider">Hash Provider</param>
+        ///// <param name="VerifyCert">The cert to verify against</param>
+        ///// <returns></returns>
+        //public static bool Verify<T>(T HashableItem, byte[] signature, Hash.HashProvider Provider, X509Certificate2 VerifyCert) where T : Hashable {
+        //    RSACryptoServiceProvider csp = (RSACryptoServiceProvider)VerifyCert.PublicKey.Key;
+        //    byte[] hash = HashableItem.GetHash(Provider).Bytes;
+        //    var providerOID = Hash.GetOIDForProvider(Provider);
+        //    return csp.VerifyHash(hash, providerOID, signature);
+        //}
 
 
         /// <summary>

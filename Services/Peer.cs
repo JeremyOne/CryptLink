@@ -17,11 +17,10 @@ namespace CryptLink {
     /// <summary>
     /// Peer - A network accessible host
     /// </summary>
-    public class Peer : Hashable, IDisposable {
+    public class Peer : IHashable, IDisposable {
         public Hash ServerOperator { get; set; }
-        public X509Certificate2 Cert { get; set; }
+        public Cert Cert { get; set; }
         public AppVersionInfo Version { get; set; }
-		public override Hash.HashProvider Provider { get; set; }
         public IServiceClient LocalClient { get; set; }
         public bool Initilized { get; private set; }
 
@@ -35,25 +34,18 @@ namespace CryptLink {
         /// Max number of threads to send in, a safe number is equal to the number of transports
         /// </summary>
         public int MaxSendingThreads { get; set; } = 2;
-
+        
         IObjectCache sendCache;
         int sendingThreads = 0;
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
-
-        [JsonIgnore]
-        public override bool HashIsImmutable {
-            get {
-                return true;
-            }
-        }
-
+        
         public void Dispose() {
             foreach (var transport in Transports) {
                 transport.Dispose();
             }
         }
-         
+        
         public T TryGet<T>(ComparableBytesAbstract Key) where T : Hashable {
             var transport = GetTransport();
             return transport.TryGet<T>(Key);
@@ -64,7 +56,7 @@ namespace CryptLink {
                 throw new InvalidOperationException("This peer already initialized");
             }
 
-            logger.Trace($"Peer '{Cert.Thumbprint}' initialized");
+            logger.Trace($"Peer '{this.ComputedHash}' initialized");
             sendCache = SendCache;
         }
 
@@ -78,8 +70,8 @@ namespace CryptLink {
                 throw new InvalidOperationException("The peer has not been initialized");
             }
 
-            sendCache.AddOrUpdate(Item.Hash, Item, ConnectTimeOut);
-            SendQueue.Enqueue(Item.Hash);
+            sendCache.AddOrUpdate(Item.ComputedHash, Item, ConnectTimeOut);
+            SendQueue.Enqueue(Item.ComputedHash);
 
             if (MaxSendingThreads < sendingThreads) {
                 Task.Run(() => ProcessSendQueue());
@@ -119,7 +111,7 @@ namespace CryptLink {
         /// </summary>
         public IPeerTransport GetTransport() {
             if (Transports == null || Transports.Count == 0) {
-                throw new NullReferenceException("No transports on peer: " + this.Hash.ToString());
+                throw new NullReferenceException("No transports on peer: " + this.ComputedHash.ToString());
             } else if (Transports.Count == 1) {
                 return Transports.First();
             } else {
@@ -127,14 +119,22 @@ namespace CryptLink {
             }
         }
 
-        public override byte[] HashableData() {
-            if (Cert == null) {
-                //possible improvement: get from web request
-                throw new NullReferenceException("Public key of a peer can not be null");
-            } else {
-                return Cert.PublicKey.EncodedKeyValue.RawData;
-            }
-        }
+
+        //Pass all IHashable interface to Cert
+
+        public Hash ComputedHash { get => ((IHashable)Cert).ComputedHash; set => ((IHashable)Cert).ComputedHash = value; }
+
+        public void ComputeHash(Hash.HashProvider Provider, Cert SigningCert) => ((IHashable)Cert).ComputeHash(Provider, SigningCert);
+
+        public bool Verify() => ((IHashable)Cert).Verify();
+
+        public bool Verify(out string Reason) => ((IHashable)Cert).Verify(out Reason);
+
+        public bool Verify(Cert SigningPublicCert) => ((IHashable)Cert).Verify(SigningPublicCert);
+
+        public bool Verify(Cert SigningPublicCert, out string Reason) => ((IHashable)Cert).Verify(SigningPublicCert, out Reason);
+
+        public byte[] GetHashableData() => ((IHashable)Cert).GetHashableData();
 
     }
 }

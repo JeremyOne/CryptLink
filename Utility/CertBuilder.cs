@@ -19,7 +19,7 @@ using Org.BouncyCastle.X509.Extension;
 namespace CryptLink
 {
 
-    public class X509Certificate2Builder
+    public class CertBuilder
     {
         //based on comments from: https://stackoverflow.com/questions/22230745/generate-self-signed-certificate-on-the-fly
 
@@ -61,7 +61,11 @@ namespace CryptLink
         private DateTime? _notAfter;
         private bool _intermediate = true;
 
-        public X509Certificate2 Build() {
+        public Cert BuildCert() {
+            return new Cert(BuildX509());
+        }
+
+        public X509Certificate2 BuildX509() {
             // Generating Random Numbers
             var randomGenerator = new CryptoApiRandomGenerator();
             var random = new SecureRandom(randomGenerator);

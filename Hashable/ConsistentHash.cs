@@ -20,7 +20,7 @@ namespace CryptLink
     /// works by putting content in the host with the next most similar hash
     /// </summary>
     /// <typeparam name="T">Type of object to store, must be an abstract class of Hashable</typeparam>
-    public class ConsistentHash<T> where T : Hashable {
+    public class ConsistentHash<T> where T : IHashable {
 
         SortedDictionary<Hash, T> circle = new SortedDictionary<Hash, T>();
         SortedDictionary<Hash, T> unreplicatedNodes = new SortedDictionary<Hash, T>();
@@ -60,7 +60,7 @@ namespace CryptLink
         /// distribution of peers in the address space, the higher the weight the more likely the node will be found while searching</param>
         /// <returns>The first hash of the node (If ReplicationWeight is more than 1, there is more than one hash of the item in the table)</returns>
         public Hash Add(T node, bool updateKeyArray, int ReplicationWeight) {
-            var nodeHash = node.Hash;
+            var nodeHash = node.ComputedHash;
             Add(node, nodeHash, updateKeyArray, ReplicationWeight);
             return nodeHash;
         }
@@ -71,7 +71,7 @@ namespace CryptLink
             }
 
             foreach (var node in nodes) {
-                Add(node, node.Hash, false, ReplicationWeight);
+                Add(node, node.ComputedHash, false, ReplicationWeight);
             }
 
             if (updateKeyArray) {

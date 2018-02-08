@@ -10,15 +10,17 @@ namespace CryptLink {
     public class ServiceConfigFactory {
 
         public static ServiceConfig TestDefaults() {
+            var ca1 = new CertBuilder { SubjectName = "CN=Test CA1", KeyStrength = 1024 }.BuildX509();
+
             return ServiceConfigFactory.Defaults(
                 true,
                 1024,
-                Hash.HashProvider.MD5,
+                Hash.HashProvider.SHA256,
                 "test",
                 new Uri("http://127.0.0.1:54321"),
                 new Uri("http://127.0.0.1:54321"),
                 new Uri("http://127.0.0.1:54321"),
-                null,
+                ca1,
                 new Version(1, 0, 0, 0),
                 new Version(1, 0, 0, 0),
                 new DictionaryCache() {
@@ -34,13 +36,12 @@ namespace CryptLink {
         }
 
         public static ServiceConfig Defaults(bool GenerateCerts, int DefaultCertLength, Hash.HashProvider Provider, 
-            string SwarmName, Uri SwarmPublicUri, Uri ServerUri, Uri LocalServerUri,
-            X509Certificate2 SigningCert, Version ServiceApiCompartibilityVersion, Version ServiceApiVersion, IObjectCache ObjectCache) {
+            string SwarmName, Uri SwarmPublicUri, Uri ServerUri, Uri LocalServerUri, X509Certificate2 SigningCert, 
+            Version ServiceApiCompartibilityVersion, Version ServiceApiVersion, IObjectCache ObjectCache) {
 
             var config = new ServiceConfig();
 
             config.ServerPeerInfo = new Peer() {
-                Provider = Provider,
                 Version = new AppVersionInfo() {
                     ApiCompartibilityVersion = ServiceApiCompartibilityVersion,
                     ApiVersion = ServiceApiVersion,
@@ -48,7 +49,7 @@ namespace CryptLink {
                     Version = Assembly.GetExecutingAssembly().GetName().Version
                 }
             };
-
+            
             config.Swarm = new Swarm() {
                 Accessibility = Swarm.JoinAccessibility.NoRestrictions,
 
@@ -82,28 +83,28 @@ namespace CryptLink {
             config.Server.StoreCache.Initialize();
            
             if (GenerateCerts) {
-                var swarmKey = new X509Certificate2Builder {
+                var swarmKey = new CertBuilder {
                     Issuer = SigningCert,
                     SubjectName = "CN=" + config.Swarm.SwarmName,
                     KeyStrength = config.Swarm.RootCertMinLength,
                     NotBefore = DateTime.Now,
                     NotAfter = DateTime.Now.AddYears(10)
-                }.Build();
+                }.BuildX509();
                 
-                config.Swarm.CertManager = new CertificateManager(swarmKey);
+                config.Swarm.Cert = new Cert(swarmKey);
                 //config.Swarm.PublicKey = Utility.GetPublicKey(swarmKey);
 
-                var serverKey = new X509Certificate2Builder {
+                var serverKey = new CertBuilder {
                     Issuer = SigningCert,
                     SubjectName = "CN=" + config.Swarm.SwarmName,
                     KeyStrength = config.Swarm.RootCertMinLength,
                     NotBefore = DateTime.Now,
                     NotAfter = DateTime.Now.AddYears(10)
-                }.Build();
+                }.BuildX509();
 
-                config.Server.CertManager = new CertificateManager(serverKey);
-                config.ServerPeerInfo.Cert = Utility.GetPublicKey(serverKey);
-
+                config.Server.Cert = new Cert(serverKey);
+                config.ServerPeerInfo.Cert = config.Server.Cert.RemovePrivateKey();
+                //config.ServerPeerInfo.ComputeHash(Provider, new Cert(SigningCert));
             }
             
             return config;

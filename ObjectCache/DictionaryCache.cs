@@ -53,7 +53,7 @@ namespace CryptLink {
             Cache.AddOrUpdate(Item.GetKeyCByte(), Item, (key, existingVal) => {
                 //If the Key exists, update the value but keep the metadata
                 itemExists = true;
-                oldSize = existingVal.Value.Hash.SourceByteLength;
+                oldSize = existingVal.Value.ComputedHash.SourceByteLength;
                 Item.MemoryHits = existingVal.MemoryHits;
                 Item.DiskHits = existingVal.DiskHits;
                 Item.LastHit = DateTime.Now;
@@ -63,11 +63,11 @@ namespace CryptLink {
             if (itemExists) {
                 //item exists, subtract the old size and add the new size
                 CurrentCollectionSize -= oldSize;
-                CurrentCollectionSize += Item.Value.Hash.SourceByteLength;
+                CurrentCollectionSize += Item.Value.ComputedHash.SourceByteLength;
             } else {
                 //item did not exist
                 _currentCollectionCount += 1;
-                CurrentCollectionSize += Item.Value.Hash.SourceByteLength;
+                CurrentCollectionSize += Item.Value.ComputedHash.SourceByteLength;
             }
 
             return true;
@@ -98,7 +98,7 @@ namespace CryptLink {
             var oldObjects = (from o in Cache where o.Value.ExpireDate < ExpiredAfter select o);
 
             foreach (var h in oldObjects) {
-                var cb = Hash.FromComputedBytes(h.Key.Bytes, h.Value.Value.Provider, h.Value.Value.Hash.SourceByteLength);
+                var cb = Hash.FromComputedBytes(h.Key.Bytes, h.Value.Value.ComputedHash.Provider, h.Value.Value.ComputedHash.SourceByteLength);
                 Remove(cb);
             }
 
@@ -112,7 +112,7 @@ namespace CryptLink {
 
             if (c?.Value != null) {
                 _currentCollectionCount -= 1;
-                CurrentCollectionSize -= c.Value.Hash.SourceByteLength;
+                CurrentCollectionSize -= c.Value.ComputedHash.SourceByteLength;
                 return true;
             } else {
                 return false;

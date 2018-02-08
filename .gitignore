@@ -1,13 +1,6 @@
-obj/*
 .vs/*
-bin/*
 packages/*
-*.csproj.user
 *.sln
-*.cache
-Ideas.txt
-*.userprefs
-*.playlist
 *.txt
 *.bak
-*.bak
+*.bck

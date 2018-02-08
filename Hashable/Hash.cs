@@ -30,7 +30,7 @@ namespace CryptLink
         public Hash() { }
 
         /// <summary>
-        /// Creates a immutable hash object with the specified bytes. NOTE: this does not COMPUTE a hash, use Hash.Compute
+        /// Creates a immutable hash object with the specified hash bytes. NOTE: this does not COMPUTE a hash, use Hash.Compute
         /// </summary>
         /// <param name="HashedBytes">The bytes to copy into this hash</param>
         /// <param name="_Provider"></param>
@@ -167,6 +167,13 @@ namespace CryptLink
             return CryptoConfig.MapNameToOID(Provider.ToString());
         }
 
+        /// <summary>
+        /// Computes a hash from a string
+        /// </summary>
+        /// <param name="FromString">The string to hash</param>
+        /// <param name="Provider">The provider to hash with</param>
+        /// <param name="SigningCert">Optional cert to sign with</param>
+        /// <returns>A new Hash object</returns>
         public static Hash Compute(string FromString, HashProvider Provider, Cert SigningCert = null) {
             UnicodeEncoding UE = new UnicodeEncoding();
             return Compute(UE.GetBytes(FromString), Provider, SigningCert);
@@ -178,7 +185,7 @@ namespace CryptLink
         /// </summary>
         /// <param name="FromBytes">Bytes to compute the hash from</param>
         /// <param name="Provider">The crypto provider to compute the hash with</param>
-        /// <param name="SigningCert"></param>
+        /// <param name="SigningCert">Optional cert to sign with</param>
         public static Hash Compute(byte[] FromBytes, HashProvider Provider, Cert SigningCert = null) {
 
             if (FromBytes == null) {
@@ -194,8 +201,6 @@ namespace CryptLink
 
             return hash;
         }
-
-
 
         /// <summary>
         /// Gets a HashAlgorithm from a HashProvider using a no-search static array
@@ -246,6 +251,5 @@ namespace CryptLink
         }
 
     }
-
 
 }

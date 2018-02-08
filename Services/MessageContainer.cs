@@ -13,17 +13,24 @@ namespace CryptLink {
         public Hash ReceiverHash { get; private set; }
         public bool Encrypted { get; private set; }
         public byte[] Payload { get; private set; }
-        public X509Certificate2 SenderCert { get; set; }
+        public Cert SenderCert { get; private set; }
+        public Hash.HashProvider Provider { get; private set; }
+
         static int intLength = sizeof(int);
         
-        public MessageContainer(Hash Sender, Hash Receiver, Hash.HashProvider HashProvider, byte[] MessagePayload, X509Certificate2 SenderCertificate) {
+        public MessageContainer(Hash Sender, Hash Receiver, Hash.HashProvider HashProvider, byte[] MessagePayload, Cert SenderCertificate) {
             SenderHash = Sender;
             ReceiverHash = Receiver;
             Payload = MessagePayload;
+            SenderCert = SenderCertificate;
+            Provider = HashProvider;
+
+            ComputeHash(Provider, SenderCert);
         }
 
         public override byte[] GetHashableData() {
-            return BitConverter.GetBytes(Encrypted)
+            return BitConverter.GetBytes((int)Provider)
+                .Concat(BitConverter.GetBytes(Encrypted))
                 .Concat(SenderHash.Bytes)
                 .Concat(ReceiverHash.Bytes)
                 .Concat(Payload)
@@ -40,22 +47,11 @@ namespace CryptLink {
                 .ToArray();
         }
 
-        public static int ByteCount(Hash.HashProvider ForProvider, int PayloadBytes, bool ZeroIndexed) {
-            int pl = Hash.GetProviderByteLength(ForProvider);
-
-            if (ZeroIndexed) {
-                return intLength + PayloadBytes + (pl * 3);
-            } else {
-                return intLength + PayloadBytes + (pl * 3) + 1;
-            }
-            
-        }
-
         /// <summary>
         /// Non-zero index byte length
         /// </summary>
-        public int ByteLength(bool ZeroIndexed, HashProvider Provider) {
-            return ByteCount(Provider, Payload.Length, ZeroIndexed);
+        public static int MinMessageByteLength(HashProvider Provider) {
+            return intLength + (Hash.GetProviderByteLength(Provider) * 3);
         }
 
         public override string ToString() {
@@ -65,7 +61,7 @@ namespace CryptLink {
                 "', Hash: '" + ComputedHash?.ToString();
         }
 
-        public static MessageContainer FromBinary(byte[] Blob, bool EnforceHashCheck, X509Certificate2 SigningCert) {
+        public static MessageContainer FromBinary(byte[] Blob, bool EnforceHashCheck, Cert SigningCert) {
 
             //check basic validity
             if (Blob == null) {
@@ -88,7 +84,7 @@ namespace CryptLink {
             int hashLength = Hash.GetProviderByteLength(provider);
 
             //check provider specific minimum length
-            int minLength = ByteCount(provider, 0, false);
+            int minLength = MinMessageByteLength(provider);
             if (Blob.Length < minLength) {
                 throw new ArgumentOutOfRangeException("Blob is too short for specified hash provider");
             }

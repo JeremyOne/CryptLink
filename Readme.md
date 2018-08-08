@@ -1,5 +1,9 @@
 ﻿# CryptLink
 
+## Important Note
+This project is being refactored and moved to: (https://github.com/CryptLink), this repo is no longer updated.
+
+## Description
 A open source distributed network aims to provide:
 * Distributed object storage
 * An unlimited number of Immutable, mutable and rolling buffer blockchains in a swarm
